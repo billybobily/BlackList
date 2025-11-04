@@ -565,6 +565,13 @@ function BlackList:CreateStandaloneWindow()
 		-- Name text
 		local nameText = button:CreateFontString("BlackListStandaloneButton"..i.."Name", "OVERLAY", "GameFontNormal")
 		nameText:SetPoint("TOPLEFT", button, "TOPLEFT", 10, -3)
+		nameText:SetPoint("TOPRIGHT", button, "TOPRIGHT", -50, -3)
+		nameText:SetJustifyH("LEFT")
+		
+		-- Expiry text (right-aligned)
+		local expiryText = button:CreateFontString("BlackListStandaloneButton"..i.."Expiry", "OVERLAY", "GameFontNormalSmall")
+		expiryText:SetPoint("TOPRIGHT", button, "TOPRIGHT", -5, -3)
+		expiryText:SetJustifyH("RIGHT")
 		
 		-- Highlight texture
 		local highlight = button:CreateTexture(nil, "BACKGROUND")
@@ -676,6 +683,7 @@ function BlackList:UpdateStandaloneUI()
 		local index = i + offset
 		local button = getglobal("BlackListStandaloneButton"..i)
 		local nameText = getglobal("BlackListStandaloneButton"..i.."Name")
+		local expiryText = getglobal("BlackListStandaloneButton"..i.."Expiry")
 		
 		if button and nameText then
 			button:SetID(index)
@@ -695,6 +703,18 @@ function BlackList:UpdateStandaloneUI()
 				end
 				
 				nameText:SetText(displayText)
+				
+				-- Show expiry if exists
+				if expiryText then
+					local expiryDisplay = self:GetExpiryText(player)
+					if expiryDisplay then
+						expiryText:SetText(expiryDisplay)
+						expiryText:Show()
+					else
+						expiryText:Hide()
+					end
+				end
+				
 				button:Show()
 				
 				-- Update highlight
@@ -787,9 +807,67 @@ function BlackList:ShowStandaloneDetails()
 		local dateText = detailsFrame:CreateFontString("BlackListStandaloneDetails_Date", "OVERLAY", "GameFontNormal")
 		dateText:SetPoint("TOPLEFT", raceText, "BOTTOMLEFT", 0, -10)
 		
+		-- Expiry dropdown
+		local expiryLabel = detailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		expiryLabel:SetPoint("TOPLEFT", dateText, "BOTTOMLEFT", 0, -10)
+		expiryLabel:SetText("Duration:")
+		
+		local expiryDropdown = CreateFrame("Frame", "BlackListStandaloneDetails_ExpiryDropdown", detailsFrame, "UIDropDownMenuTemplate")
+		expiryDropdown:SetPoint("LEFT", expiryLabel, "RIGHT", -10, -3)
+		
+		UIDropDownMenu_SetWidth(expiryDropdown, 100)
+		UIDropDownMenu_Initialize(expiryDropdown, function()
+			local info = UIDropDownMenu_CreateInfo()
+			
+			info.text = "Forever"
+			info.value = 0
+			info.func = function()
+				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 0)
+				UIDropDownMenu_SetSelectedValue(expiryDropdown, 0)
+				BlackList:UpdateDetailsExpiry()
+			end
+			UIDropDownMenu_AddButton(info)
+			
+			info.text = "1 Week"
+			info.value = 1
+			info.func = function()
+				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 1)
+				UIDropDownMenu_SetSelectedValue(expiryDropdown, 1)
+				BlackList:UpdateDetailsExpiry()
+			end
+			UIDropDownMenu_AddButton(info)
+			
+			info.text = "2 Weeks"
+			info.value = 2
+			info.func = function()
+				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 2)
+				UIDropDownMenu_SetSelectedValue(expiryDropdown, 2)
+				BlackList:UpdateDetailsExpiry()
+			end
+			UIDropDownMenu_AddButton(info)
+			
+			info.text = "3 Weeks"
+			info.value = 3
+			info.func = function()
+				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 3)
+				UIDropDownMenu_SetSelectedValue(expiryDropdown, 3)
+				BlackList:UpdateDetailsExpiry()
+			end
+			UIDropDownMenu_AddButton(info)
+			
+			info.text = "4 Weeks"
+			info.value = 4
+			info.func = function()
+				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 4)
+				UIDropDownMenu_SetSelectedValue(expiryDropdown, 4)
+				BlackList:UpdateDetailsExpiry()
+			end
+			UIDropDownMenu_AddButton(info)
+		end)
+		
 		-- Reason label
 		local reasonLabel = detailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-		reasonLabel:SetPoint("TOPLEFT", dateText, "BOTTOMLEFT", 0, -15)
+		reasonLabel:SetPoint("TOPLEFT", expiryLabel, "BOTTOMLEFT", 0, -15)
 		reasonLabel:SetText("Reason:")
 		
 		-- Reason text box (scrollable multiline)
@@ -886,6 +964,23 @@ function BlackList:ShowStandaloneDetails()
 	if dateText then
 		local dateStr = date("%I:%M%p on %b %d, 20%y", player["added"])
 		dateText:SetText("Blacklisted: " .. dateStr)
+	end
+	
+	-- Update expiry dropdown
+	local expiryDropdown = getglobal("BlackListStandaloneDetails_ExpiryDropdown")
+	if expiryDropdown then
+		if player["expiry"] then
+			local now = time()
+			local remaining = player["expiry"] - now
+			local weeks = math.ceil(remaining / (7 * 24 * 60 * 60))
+			if weeks > 0 and weeks <= 4 then
+				UIDropDownMenu_SetSelectedValue(expiryDropdown, weeks)
+			else
+				UIDropDownMenu_SetSelectedValue(expiryDropdown, 0)
+			end
+		else
+			UIDropDownMenu_SetSelectedValue(expiryDropdown, 0)
+		end
 	end
 	
 	local reasonText = getglobal("BlackListStandaloneDetails_ReasonText")
@@ -1087,4 +1182,10 @@ function BlackList:UpdateOptionsUI()
 	getglobal("BlackListOptionsCheckButton5"):SetChecked(self:GetOption("preventInvites", true));
 	getglobal("BlackListOptionsCheckButton6"):SetChecked(self:GetOption("preventMyInvites", false));
 	getglobal("BlackListOptionsCheckButton7"):SetChecked(self:GetOption("warnPartyJoin", true));
+end
+
+-- Update expiry display after changing dropdown
+function BlackList:UpdateDetailsExpiry()
+	-- Refresh the main list to show updated expiry
+	self:UpdateStandaloneUI()
 end

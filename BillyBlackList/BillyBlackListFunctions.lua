@@ -38,7 +38,7 @@ function BlackList:AddPlayer(player, reason)
 		name = string.upper(string.sub(name, 1, len)) .. string.lower(string.sub(name, len + 1));
 	end
 	
-	player = {["name"] = name, ["reason"] = reason, ["added"] = added, ["level"] = level, ["class"] = class, ["race"] = race};
+	player = {["name"] = name, ["reason"] = reason, ["added"] = added, ["level"] = level, ["class"] = class, ["race"] = race, ["expiry"] = nil};
 	table.insert(BlackListedPlayers[GetRealmName()], player);
 
 	self:AddMessage(name .. " " .. ADDED_TO_BLACKLIST, "yellow");
@@ -266,5 +266,81 @@ function BlackList:CheckGroup()
 		end
 	else
 		self:AddMessage("BlackList: No blacklisted players found in your " .. groupType .. ".", "green")
+	end
+end
+
+-- Set expiry for a blacklisted player
+function BlackList:SetExpiry(index, weeks)
+	if index <= 0 or index > self:GetNumBlackLists() then
+		return
+	end
+	
+	local player = self:GetPlayerByIndex(index)
+	if not player then return end
+	
+	if weeks and weeks > 0 then
+		-- Set expiry timestamp (weeks * 7 days * 24 hours * 60 minutes * 60 seconds)
+		player["expiry"] = time() + (weeks * 7 * 24 * 60 * 60)
+	else
+		-- Forever - remove expiry
+		player["expiry"] = nil
+	end
+	
+	-- Update UI if visible
+	local standaloneFrame = getglobal("BlackListStandaloneFrame")
+	if standaloneFrame and standaloneFrame:IsVisible() then
+		self:UpdateStandaloneUI()
+	end
+end
+
+-- Get formatted expiry text for display
+function BlackList:GetExpiryText(player)
+	if not player or not player["expiry"] then
+		return nil
+	end
+	
+	local now = time()
+	local expiry = player["expiry"]
+	
+	if expiry <= now then
+		return "|cFFFF00FF[expired]|r"
+	end
+	
+	local remaining = expiry - now
+	local weeks = math.floor(remaining / (7 * 24 * 60 * 60))
+	local days = math.floor(remaining / (24 * 60 * 60))
+	
+	if weeks > 0 then
+		return "|cFFFF00FF[" .. weeks .. "w left]|r"
+	elseif days > 0 then
+		return "|cFFFF00FF[" .. days .. "d left]|r"
+	else
+		return "|cFFFF00FF[<1d left]|r"
+	end
+end
+
+-- Check and remove expired blacklist entries
+function BlackList:RemoveExpired()
+	local now = time()
+	local removed = {}
+	
+	for i = self:GetNumBlackLists(), 1, -1 do
+		local player = self:GetPlayerByIndex(i)
+		if player and player["expiry"] and player["expiry"] <= now then
+			table.insert(removed, player["name"])
+			table.remove(BlackListedPlayers[GetRealmName()], i)
+		end
+	end
+	
+	if #removed > 0 then
+		for _, name in ipairs(removed) do
+			self:AddMessage("BlackList: " .. name .. " expired and was removed.", "yellow")
+		end
+		
+		-- Update UI if visible
+		local standaloneFrame = getglobal("BlackListStandaloneFrame")
+		if standaloneFrame and standaloneFrame:IsVisible() then
+			self:UpdateStandaloneUI()
+		end
 	end
 end

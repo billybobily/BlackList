@@ -34,6 +34,10 @@ function BlackList:OnLoad()
 	
 	-- Create minimap button
 	self:CreateMinimapButton();
+	
+	-- Set up periodic expiry check (every 5 minutes)
+	self.expiryCheckTimer = 0
+	self.expiryCheckInterval = 300  -- 5 minutes in seconds
 
 end
 
@@ -392,9 +396,26 @@ function BlackList:CreateMinimapButton()
 		GameTooltip:Show()
 	end)
 	
+	
 	button:SetScript("OnLeave", function()
 		GameTooltip:Hide()
 	end)
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Minimap button created", 0, 1, 0)
+end
+
+-- OnUpdate handler for periodic tasks
+function BlackList:OnUpdate(elapsed)
+	if not self.expiryCheckTimer then
+		self.expiryCheckTimer = 0
+	end
+	
+	self.expiryCheckTimer = self.expiryCheckTimer + elapsed
+	
+	-- Check for expired entries every 5 minutes
+	if self.expiryCheckTimer >= self.expiryCheckInterval then
+		self.expiryCheckTimer = 0
+		self:RemoveExpired()
+	end
+end
 end
