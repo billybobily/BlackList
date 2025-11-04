@@ -218,7 +218,7 @@ function BlackList:HandleSlashCmd(type, args)
 				reason = string.sub(args, index + 1);
 			end
 
-			self:AddPlayer(name, nil, nil, reason);
+			self:AddPlayer(name, reason);
 		end
 	elseif (type == SLASH_TYPE_REMOVE) then
 		if (args == "") then
