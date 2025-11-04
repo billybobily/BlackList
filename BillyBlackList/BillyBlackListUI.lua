@@ -467,6 +467,13 @@ function BlackList:CreateStandaloneWindow()
 			DEFAULT_CHAT_FRAME:AddMessage("BlackList: Applying pfUI styling to main window", 0, 1, 0)
 			pfUI.api.CreateBackdrop(this, nil, true)
 			this.pfuiStyled = true
+			
+			-- Apply pfUI styling to close button after backdrop is created
+			local closeBtn = this.closeBtn
+			if closeBtn and pfUI.api.SkinCloseButton then
+				closeBtn:ClearAllPoints()
+				pfUI.api.SkinCloseButton(closeBtn, this.backdrop or this, -6, -6)
+			end
 		end
 	end)
 	
@@ -475,8 +482,11 @@ function BlackList:CreateStandaloneWindow()
 	title:SetPoint("TOP", frame, "TOP", 0, -15)
 	title:SetText("Black List")
 	
-	-- Close button with pfUI styling
-	CreateBlackListCloseButton(frame)
+	-- Close button (will be styled by pfUI in OnShow event if available)
+	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+	closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
+	closeBtn:SetScript("OnClick", function() frame:Hide() end)
+	frame.closeBtn = closeBtn  -- Store reference for pfUI styling
 	
 	-- Add title bar for dragging indication
 	local dragArea = CreateFrame("Frame", nil, frame)
@@ -701,6 +711,13 @@ function BlackList:ShowStandaloneDetails()
 				if not this.pfuiStyled then
 					pfUI.api.CreateBackdrop(this, nil, true)
 					this.pfuiStyled = true
+					
+					-- Apply pfUI styling to close button after backdrop is created
+					local closeBtn = this.closeBtn
+					if closeBtn and pfUI.api.SkinCloseButton then
+						closeBtn:ClearAllPoints()
+						pfUI.api.SkinCloseButton(closeBtn, this.backdrop or this, -6, -6)
+					end
 				end
 			end
 			-- Close options when details is opened
@@ -714,8 +731,11 @@ function BlackList:ShowStandaloneDetails()
 		local title = detailsFrame:CreateFontString("BlackListStandaloneDetails_Title", "OVERLAY", "GameFontNormalLarge")
 		title:SetPoint("TOP", detailsFrame, "TOP", 0, -15)
 		
-		-- Close button with pfUI styling
-		CreateBlackListCloseButton(detailsFrame)
+		-- Close button (will be styled by pfUI in OnShow event if available)
+		local closeBtn = CreateFrame("Button", nil, detailsFrame, "UIPanelCloseButton")
+		closeBtn:SetPoint("TOPRIGHT", detailsFrame, "TOPRIGHT", -5, -5)
+		closeBtn:SetScript("OnClick", function() detailsFrame:Hide() end)
+		detailsFrame.closeBtn = closeBtn  -- Store reference for pfUI styling
 		
 		-- Details window is static, not draggable
 		
