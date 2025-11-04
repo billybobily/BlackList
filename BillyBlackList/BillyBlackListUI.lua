@@ -825,7 +825,7 @@ function BlackList:ShowStandaloneDetails()
 		expiryDropdown:SetPoint("TOPLEFT", expiryLabel, "BOTTOMLEFT", -15, -5)
 		
 		UIDropDownMenu_SetWidth(100, expiryDropdown)
-		UIDropDownMenu_SetText(expiryDropdown, "")  -- Start with empty text
+		UIDropDownMenu_SetText("", expiryDropdown)  -- Start with empty text
 		UIDropDownMenu_Initialize(expiryDropdown, function(self, level)
 			local info = {}
 			
@@ -833,7 +833,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 0
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 0)
-				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -843,7 +843,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 1
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 1)
-				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -853,7 +853,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 2
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 2)
-				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -863,7 +863,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 3
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 3)
-				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -873,7 +873,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 4
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 4)
-				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -992,7 +992,7 @@ function BlackList:ShowStandaloneDetails()
 	-- Update expiry dropdown (always reset to empty)
 	local expiryDropdown = getglobal("BlackListStandaloneDetails_ExpiryDropdown")
 	if expiryDropdown then
-		UIDropDownMenu_SetText(expiryDropdown, "")  -- Always show empty
+		UIDropDownMenu_SetText("", expiryDropdown)  -- Always show empty
 	end
 	
 	-- Update expiry date display
