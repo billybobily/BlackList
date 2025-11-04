@@ -23,6 +23,8 @@ Adding someone to your BlackList is easy:
 
 You can also use /removeblacklist or /removebl to remove players from your list.
 
+To check if any blacklisted players are in your current party or raid, use /blcheck. This will scan your group and alert you if any blacklisted players are present, along with their reasons.
+
 When you have someone targeted, BlackList will automatically fill in their details like level, class, and race. You can edit this information later by clicking on their name in the list to open the details window.
 
 ## Options and features
