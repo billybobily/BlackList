@@ -12,7 +12,7 @@ This addon exists to manage your group invite and raid state, it helps you filte
 
 ## What it does
 
-Billy's Blacklist adds a new "BlackList" icon to your minimap, similar to other addons. You can add players with detailed information including their level, class, race, faction, and a custom reason for blacklisting them. The addon can warn you with text and sound when you interact with blacklisted players, and optionally block communication or party invites from them.
+Billy's Blacklist adds a new "BlackList" icon to your minimap, similar to other addons. You can add players with detailed information including their level, class, race, and a custom reason for blacklisting them. The addon can warn you with text and sound when you interact with blacklisted players, and optionally block communication or party invites from them.
 
 The addon now includes a comprehensive options menu where you can control exactly how BlackList behaves. You can choose to block whispers, prevent party invitations, get warnings when a blacklisted player joins your party and more
 
