@@ -819,9 +819,9 @@ function BlackList:ShowStandaloneDetails()
 		local expiryDropdown = CreateFrame("Frame", "BlackListStandaloneDetails_ExpiryDropdown", detailsFrame, "UIDropDownMenuTemplate")
 		expiryDropdown:SetPoint("LEFT", expiryLabel, "RIGHT", -10, -3)
 		
-		UIDropDownMenu_SetWidth(expiryDropdown, 100)
-		UIDropDownMenu_Initialize(expiryDropdown, function()
-			local info = UIDropDownMenu_CreateInfo()
+		UIDropDownMenu_SetWidth(100, expiryDropdown)
+		UIDropDownMenu_Initialize(expiryDropdown, function(self, level)
+			local info = {}
 			
 			info.text = "Forever"
 			info.value = 0
@@ -830,8 +830,9 @@ function BlackList:ShowStandaloneDetails()
 				UIDropDownMenu_SetSelectedValue(expiryDropdown, 0)
 				BlackList:UpdateDetailsExpiry()
 			end
-			UIDropDownMenu_AddButton(info)
+			UIDropDownMenu_AddButton(info, level)
 			
+			info = {}
 			info.text = "1 Week"
 			info.value = 1
 			info.func = function()
@@ -839,8 +840,9 @@ function BlackList:ShowStandaloneDetails()
 				UIDropDownMenu_SetSelectedValue(expiryDropdown, 1)
 				BlackList:UpdateDetailsExpiry()
 			end
-			UIDropDownMenu_AddButton(info)
+			UIDropDownMenu_AddButton(info, level)
 			
+			info = {}
 			info.text = "2 Weeks"
 			info.value = 2
 			info.func = function()
@@ -848,8 +850,9 @@ function BlackList:ShowStandaloneDetails()
 				UIDropDownMenu_SetSelectedValue(expiryDropdown, 2)
 				BlackList:UpdateDetailsExpiry()
 			end
-			UIDropDownMenu_AddButton(info)
+			UIDropDownMenu_AddButton(info, level)
 			
+			info = {}
 			info.text = "3 Weeks"
 			info.value = 3
 			info.func = function()
@@ -857,8 +860,9 @@ function BlackList:ShowStandaloneDetails()
 				UIDropDownMenu_SetSelectedValue(expiryDropdown, 3)
 				BlackList:UpdateDetailsExpiry()
 			end
-			UIDropDownMenu_AddButton(info)
+			UIDropDownMenu_AddButton(info, level)
 			
+			info = {}
 			info.text = "4 Weeks"
 			info.value = 4
 			info.func = function()
@@ -866,7 +870,7 @@ function BlackList:ShowStandaloneDetails()
 				UIDropDownMenu_SetSelectedValue(expiryDropdown, 4)
 				BlackList:UpdateDetailsExpiry()
 			end
-			UIDropDownMenu_AddButton(info)
+			UIDropDownMenu_AddButton(info, level)
 		end)
 		
 		-- Reason label
