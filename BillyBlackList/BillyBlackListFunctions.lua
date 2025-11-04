@@ -214,3 +214,57 @@ function GetFaction(race, returnText)
 	end
 
 end
+
+-- Check current party/raid for blacklisted players
+function BlackList:CheckGroup()
+	local numBlacklisted = 0
+	local blacklistedNames = {}
+	local groupSize = 0
+	local groupType = "Party"
+	
+	-- Check if in raid
+	if GetNumRaidMembers() > 0 then
+		groupSize = GetNumRaidMembers()
+		groupType = "Raid"
+		
+		for i = 1, groupSize do
+			local name = UnitName("raid"..i)
+			if name and self:GetIndexByName(name) > 0 then
+				numBlacklisted = numBlacklisted + 1
+				table.insert(blacklistedNames, name)
+			end
+		end
+	-- Check if in party
+	elseif GetNumPartyMembers() > 0 then
+		groupSize = GetNumPartyMembers()
+		groupType = "Party"
+		
+		-- Check party members (doesn't include player)
+		for i = 1, groupSize do
+			local name = UnitName("party"..i)
+			if name and self:GetIndexByName(name) > 0 then
+				numBlacklisted = numBlacklisted + 1
+				table.insert(blacklistedNames, name)
+			end
+		end
+	else
+		self:AddMessage("BlackList: You are not in a group.", "yellow")
+		return
+	end
+	
+	-- Report results
+	if numBlacklisted > 0 then
+		self:AddMessage("BlackList: Found " .. numBlacklisted .. " blacklisted player(s) in your " .. groupType .. ":", "red")
+		for _, name in ipairs(blacklistedNames) do
+			local player = self:GetPlayerByIndex(self:GetIndexByName(name))
+			local reason = player["reason"]
+			if reason and reason ~= "" then
+				self:AddMessage("  - " .. name .. " (Reason: " .. reason .. ")", "red")
+			else
+				self:AddMessage("  - " .. name, "red")
+			end
+		end
+	else
+		self:AddMessage("BlackList: No blacklisted players found in your " .. groupType .. ".", "green")
+	end
+end

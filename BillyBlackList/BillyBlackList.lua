@@ -195,6 +195,11 @@ function BlackList:RegisterSlashCmds()
 	SLASH_RemoveBlackList1 = "/removeblacklist";
 	SLASH_RemoveBlackList2 = "/removebl";
 
+	SlashCmdList["CheckBlackList"]   = function(args)
+								BlackList:CheckGroup()
+							end;
+	SLASH_CheckBlackList1 = "/blcheck";
+
 end
 
 -- Handles the slash cmds
