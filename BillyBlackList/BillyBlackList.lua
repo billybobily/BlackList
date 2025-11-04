@@ -259,6 +259,16 @@ function BlackList:HandleEvent(event)
 		local faction, localizedFaction = UnitFactionGroup("target");
 		if (BlackList:GetIndexByName(name) > 0) then
 			local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
+			
+			-- Auto-update player info from target if unknown
+			if (player["level"] == "" or player["class"] == "" or player["race"] == "") then
+				if UnitIsPlayer("target") then
+					player["level"] = UnitLevel("target") .. ""
+					player["class"] = UnitClass("target") or ""
+					local race, raceEn = UnitRace("target")
+					player["race"] = race or ""
+				end
+			end
 
 			if (BlackList:GetOption("warnTarget", true)) then
 				-- warn player

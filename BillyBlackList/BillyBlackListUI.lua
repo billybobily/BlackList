@@ -605,7 +605,23 @@ function BlackList:CreateStandaloneWindow()
 	addBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 15, 45)
 	addBtn:SetText("Add Player")
 	addBtn:SetScript("OnClick", function()
-		StaticPopup_Show("BLACKLIST_PLAYER")
+		-- Check if we have a valid player target (but not yourself)
+		if UnitExists("target") and UnitIsPlayer("target") and UnitName("target") ~= UnitName("player") then
+			local targetName = UnitName("target")
+			
+			-- Check if already blacklisted
+			if BlackList:GetIndexByName(targetName) > 0 then
+				BlackList:AddMessage("BlackList: " .. targetName .. " is already blacklisted.", "yellow")
+				return
+			end
+			
+			-- Add target with full info
+			BlackList:AddPlayer("target")
+			BlackList:UpdateStandaloneUI()
+		else
+			-- No valid target (or targeting yourself), show prompt
+			StaticPopup_Show("BLACKLIST_PLAYER")
+		end
 	end)
 	
 	-- Remove button (bottom left, under Add)
@@ -813,8 +829,9 @@ function BlackList:ShowStandaloneDetails()
 		raceText:SetPoint("TOPLEFT", levelText, "BOTTOMLEFT", 0, -5)
 		
 		-- Date added text
-		local dateText = detailsFrame:CreateFontString("BlackListStandaloneDetails_Date", "OVERLAY", "GameFontNormal")
+		local dateText = detailsFrame:CreateFontString("BlackListStandaloneDetails_Date", "OVERLAY", "GameFontNormalSmall")
 		dateText:SetPoint("TOPLEFT", raceText, "BOTTOMLEFT", 0, -10)
+		dateText:SetTextColor(0.7, 0.7, 0.7)
 		
 		-- Expiry dropdown
 		local expiryLabel = detailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -997,6 +1014,9 @@ function BlackList:ShowStandaloneDetails()
 	-- Store the current player index for saving
 	detailsFrame.currentPlayerIndex = self:GetSelectedBlackList()
 	
+	-- Try to update player info from target or group
+	self:TryUpdatePlayerInfo(player["name"])
+	
 	-- Update details
 	local title = getglobal("BlackListStandaloneDetails_Title")
 	if title then
@@ -1005,23 +1025,29 @@ function BlackList:ShowStandaloneDetails()
 	
 	local levelText = getglobal("BlackListStandaloneDetails_Level")
 	if levelText then
-		local level = ""
-		if player["level"] == "" and player["class"] == "" then
-			level = "Unknown Level, Class"
+		if player["level"] == "" and player["class"] == "" and player["race"] == "" then
+			-- No info at all
+			levelText:SetText("No information available")
+		elseif player["level"] == "" and player["class"] == "" then
+			levelText:SetText("Unknown Level, Class")
 		elseif player["level"] == "" then
-			level = "Unknown Level " .. player["class"]
+			levelText:SetText("Unknown Level " .. player["class"])
 		elseif player["class"] == "" then
-			level = "Level " .. player["level"] .. " Unknown Class"
+			levelText:SetText("Level " .. player["level"] .. " Unknown Class")
 		else
-			level = "Level " .. player["level"] .. " " .. player["class"]
+			levelText:SetText("Level " .. player["level"] .. " " .. player["class"])
 		end
-		levelText:SetText(level)
 	end
 	
 	local raceText = getglobal("BlackListStandaloneDetails_Race")
 	if raceText then
-		local race = player["race"] ~= "" and player["race"] or "Unknown Race"
-		raceText:SetText(race)
+		if player["level"] == "" and player["class"] == "" and player["race"] == "" then
+			-- Hide race line if no info at all
+			raceText:SetText("")
+		else
+			local race = player["race"] ~= "" and player["race"] or "Unknown Race"
+			raceText:SetText(race)
+		end
 	end
 	
 	local dateText = getglobal("BlackListStandaloneDetails_Date")

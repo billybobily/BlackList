@@ -29,6 +29,13 @@ function BlackList:AddPlayer(player, reason)
 		class = "";
 		race = "";
 	end
+	
+	-- Prevent blacklisting yourself
+	if (name == UnitName("player")) then
+		self:AddMessage("BlackList: You cannot blacklist yourself.", "yellow");
+		return;
+	end
+	
 	if (self:GetIndexByName(name) > 0) then
 		self:AddMessage(name .. " " .. ALREADY_BLACKLISTED, "yellow");
 		return;
@@ -52,6 +59,9 @@ function BlackList:AddPlayer(player, reason)
 	table.insert(BlackListedPlayers[GetRealmName()], player);
 
 	self:AddMessage(name .. " " .. ADDED_TO_BLACKLIST, "yellow");
+	
+	-- Try to update info immediately from target or group
+	self:TryUpdatePlayerInfo(name)
 
 	-- Update standalone UI if it exists
 	local standaloneFrame = getglobal("BlackListStandaloneFrame")
@@ -225,6 +235,52 @@ function GetFaction(race, returnText)
 
 end
 
+-- Try to update player info from target or party/raid
+function BlackList:TryUpdatePlayerInfo(playerName)
+	local index = self:GetIndexByName(playerName)
+	if index <= 0 then return end
+	
+	local player = self:GetPlayerByIndex(index)
+	if not player then return end
+	
+	-- Always try to update from available sources (levels can change)
+	
+	-- Check current target
+	if UnitExists("target") and UnitIsPlayer("target") and UnitName("target") == playerName then
+		player["level"] = UnitLevel("target") .. ""
+		player["class"] = UnitClass("target") or ""
+		local race, raceEn = UnitRace("target")
+		player["race"] = race or ""
+		return
+	end
+	
+	-- Check raid members
+	if GetNumRaidMembers() > 0 then
+		for i = 1, GetNumRaidMembers() do
+			if UnitName("raid"..i) == playerName then
+				player["level"] = UnitLevel("raid"..i) .. ""
+				player["class"] = UnitClass("raid"..i) or ""
+				local race, raceEn = UnitRace("raid"..i)
+				player["race"] = race or ""
+				return
+			end
+		end
+	end
+	
+	-- Check party members
+	if GetNumPartyMembers() > 0 then
+		for i = 1, GetNumPartyMembers() do
+			if UnitName("party"..i) == playerName then
+				player["level"] = UnitLevel("party"..i) .. ""
+				player["class"] = UnitClass("party"..i) or ""
+				local race, raceEn = UnitRace("party"..i)
+				player["race"] = race or ""
+				return
+			end
+		end
+	end
+end
+
 -- Check current party/raid for blacklisted players
 function BlackList:CheckGroup()
 	local numBlacklisted = 0
@@ -277,6 +333,28 @@ function BlackList:CheckGroup()
 	else
 		self:AddMessage("BlackList: No blacklisted players found in your " .. groupType .. ".", "green")
 	end
+end
+
+-- Update player info from current target
+function BlackList:UpdatePlayerInfoFromTarget(index)
+	if index <= 0 or index > self:GetNumBlackLists() then
+		return false
+	end
+	
+	local player = self:GetPlayerByIndex(index)
+	if not player then return false end
+	
+	-- Check if target is the same player
+	if UnitIsPlayer("target") and UnitName("target") == player["name"] then
+		-- Update info from target
+		player["level"] = UnitLevel("target") .. ""
+		player["class"] = UnitClass("target") or ""
+		local race, raceEn = UnitRace("target")
+		player["race"] = race or ""
+		return true
+	end
+	
+	return false
 end
 
 -- Set expiry for a blacklisted player
