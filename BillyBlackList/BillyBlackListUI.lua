@@ -515,8 +515,8 @@ function BlackList:CreateStandaloneWindow()
 		end
 	end
 	
-	-- Create player list buttons (7 visible at a time)
-	for i = 1, 7 do
+	-- Create player list buttons (19 visible at a time - fits the scroll area)
+	for i = 1, 19 do
 		local button = CreateFrame("Button", "BlackListStandaloneButton"..i, frame)
 		button:SetWidth(298)
 		button:SetHeight(16)
@@ -636,8 +636,8 @@ function BlackList:UpdateStandaloneUI()
 	
 	local offset = FauxScrollFrame_GetOffset(scrollFrame)
 	
-	-- Update each button
-	for i = 1, 7 do
+	-- Update each button (19 buttons visible)
+	for i = 1, 19 do
 		local index = i + offset
 		local button = getglobal("BlackListStandaloneButton"..i)
 		local nameText = getglobal("BlackListStandaloneButton"..i.."Name")
@@ -661,8 +661,8 @@ function BlackList:UpdateStandaloneUI()
 		end
 	end
 	
-	-- Update scroll frame
-	FauxScrollFrame_Update(scrollFrame, numBlackLists, 7, 16)
+	-- Update scroll frame (19 visible buttons, 16 pixels height each)
+	FauxScrollFrame_Update(scrollFrame, numBlackLists, 19, 16)
 end
 
 function BlackList:ShowStandaloneDetails()
