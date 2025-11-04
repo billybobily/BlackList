@@ -790,7 +790,10 @@ function BlackList:ShowStandaloneDetails()
 		
 		-- Close button
 		local closeBtn = CreateFrame("Button", nil, detailsFrame, "UIPanelCloseButton")
-		closeBtn:SetScript("OnClick", function() detailsFrame:Hide() end)
+		closeBtn:SetScript("OnClick", function()
+			CloseDropDownMenus()
+			detailsFrame:Hide()
+		end)
 		
 		-- Apply pfUI styling to close button immediately if available
 		if IsPfUIActive() and pfUI.api.SkinCloseButton then
@@ -822,6 +825,7 @@ function BlackList:ShowStandaloneDetails()
 		expiryDropdown:SetPoint("TOPLEFT", expiryLabel, "BOTTOMLEFT", -15, -5)
 		
 		UIDropDownMenu_SetWidth(100, expiryDropdown)
+		UIDropDownMenu_SetText(expiryDropdown, "")  -- Start with empty text
 		UIDropDownMenu_Initialize(expiryDropdown, function(self, level)
 			local info = {}
 			
@@ -829,7 +833,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 0
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 0)
-				UIDropDownMenu_SetSelectedValue(expiryDropdown, 0)
+				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -839,7 +843,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 1
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 1)
-				UIDropDownMenu_SetSelectedValue(expiryDropdown, 1)
+				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -849,7 +853,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 2
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 2)
-				UIDropDownMenu_SetSelectedValue(expiryDropdown, 2)
+				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -859,7 +863,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 3
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 3)
-				UIDropDownMenu_SetSelectedValue(expiryDropdown, 3)
+				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -869,7 +873,7 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 4
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 4)
-				UIDropDownMenu_SetSelectedValue(expiryDropdown, 4)
+				UIDropDownMenu_SetText(expiryDropdown, "")  -- Reset to empty
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -933,12 +937,16 @@ function BlackList:ShowStandaloneDetails()
 		
 		-- Save when details window is hidden
 		detailsFrame:SetScript("OnHide", function()
+			CloseDropDownMenus()
 			SaveReason()
 		end)
 		
 		-- Store reference to SaveReason so it can be called from outside
 		detailsFrame.SaveReason = SaveReason
 	end
+	
+	-- Close any open dropdowns before switching players
+	CloseDropDownMenus()
 	
 	-- Save previous player's reason before showing new one
 	if detailsFrame.SaveReason and detailsFrame.currentPlayerIndex then
@@ -981,21 +989,10 @@ function BlackList:ShowStandaloneDetails()
 		dateText:SetText("Blacklisted: " .. dateStr)
 	end
 	
-	-- Update expiry dropdown
+	-- Update expiry dropdown (always reset to empty)
 	local expiryDropdown = getglobal("BlackListStandaloneDetails_ExpiryDropdown")
 	if expiryDropdown then
-		if player["expiry"] then
-			local now = time()
-			local remaining = player["expiry"] - now
-			local weeks = math.ceil(remaining / (7 * 24 * 60 * 60))
-			if weeks > 0 and weeks <= 4 then
-				UIDropDownMenu_SetSelectedValue(expiryDropdown, weeks)
-			else
-				UIDropDownMenu_SetSelectedValue(expiryDropdown, 0)
-			end
-		else
-			UIDropDownMenu_SetSelectedValue(expiryDropdown, 0)
-		end
+		UIDropDownMenu_SetText(expiryDropdown, "")  -- Always show empty
 	end
 	
 	-- Update expiry date display
@@ -1005,7 +1002,7 @@ function BlackList:ShowStandaloneDetails()
 			local expiryDateStr = date("%I:%M%p on %b %d, 20%y", player["expiry"])
 			expiryDateText:SetText("Expires: " .. expiryDateStr)
 		else
-			expiryDateText:SetText("")
+			expiryDateText:SetText("Expires: Never")
 		end
 	end
 	
@@ -1223,7 +1220,7 @@ function BlackList:UpdateDetailsExpiry()
 					local expiryDateStr = date("%I:%M%p on %b %d, 20%y", player["expiry"])
 					expiryDateText:SetText("Expires: " .. expiryDateStr)
 				else
-					expiryDateText:SetText("")
+					expiryDateText:SetText("Expires: Never")
 				end
 			end
 		end
