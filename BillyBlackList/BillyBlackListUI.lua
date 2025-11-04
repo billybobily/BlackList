@@ -501,6 +501,18 @@ function BlackList:CreateStandaloneWindow()
 	closeBtn:SetScript("OnClick", function() frame:Hide() end)
 	frame.closeBtn = closeBtn  -- Store reference for pfUI styling
 	
+	-- Close sub-windows when main window closes
+	frame:SetScript("OnHide", function()
+		local detailsFrame = getglobal("BlackListStandaloneDetailsFrame")
+		if detailsFrame and detailsFrame:IsVisible() then
+			detailsFrame:Hide()
+		end
+		local optionsFrame = getglobal("BlackListOptionsFrame_New")
+		if optionsFrame and optionsFrame:IsVisible() then
+			optionsFrame:Hide()
+		end
+	end)
+	
 	-- Add title bar for dragging indication
 	local dragArea = CreateFrame("Frame", nil, frame)
 	dragArea:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
