@@ -218,12 +218,20 @@ local function CreateNewOptionsFrame()
 		return BlackListOptionsFrame_New
 	end
 	
-	-- Create the main frame
+	-- Create the main frame (backdrop is applied inside CreateBlackListFrame)
 	BlackListOptionsFrame_New = CreateBlackListFrame("BlackListOptionsFrame_New", 300, UIParent, 0, 0)
 	local f = BlackListOptionsFrame_New
 	
-	-- Add close button
-	CreateBlackListCloseButton(f)
+	-- Add close button AFTER frame creation (so backdrop exists)
+	local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+	closeBtn:SetScript("OnClick", function() f:Hide() end)
+	
+	-- Apply pfUI styling to close button if available
+	if IsPfUIActive() and pfUI.api.SkinCloseButton then
+		pfUI.api.SkinCloseButton(closeBtn, f.backdrop or f, -6, -6)
+	else
+		closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -5, -5)
+	end
 	
 	local pad = -15
 	
