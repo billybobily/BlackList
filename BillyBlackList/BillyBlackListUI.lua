@@ -475,9 +475,8 @@ function BlackList:CreateStandaloneWindow()
 	title:SetPoint("TOP", frame, "TOP", 0, -15)
 	title:SetText("Black List")
 	
-	-- Close button
-	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-	closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
+	-- Close button with pfUI styling
+	CreateBlackListCloseButton(frame)
 	
 	-- Add title bar for dragging indication
 	local dragArea = CreateFrame("Frame", nil, frame)
@@ -715,9 +714,8 @@ function BlackList:ShowStandaloneDetails()
 		local title = detailsFrame:CreateFontString("BlackListStandaloneDetails_Title", "OVERLAY", "GameFontNormalLarge")
 		title:SetPoint("TOP", detailsFrame, "TOP", 0, -15)
 		
-		-- Close button
-		local closeBtn = CreateFrame("Button", nil, detailsFrame, "UIPanelCloseButton")
-		closeBtn:SetPoint("TOPRIGHT", detailsFrame, "TOPRIGHT", -5, -5)
+		-- Close button with pfUI styling
+		CreateBlackListCloseButton(detailsFrame)
 		
 		-- Details window is static, not draggable
 		
