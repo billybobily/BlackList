@@ -881,7 +881,7 @@ function BlackList:ShowStandaloneDetails()
 		
 		-- Expiry date display
 		local expiryDateText = detailsFrame:CreateFontString("BlackListStandaloneDetails_ExpiryDate", "OVERLAY", "GameFontNormalSmall")
-		expiryDateText:SetPoint("TOPLEFT", expiryDropdown, "BOTTOMLEFT", 15, 0)
+		expiryDateText:SetPoint("TOPLEFT", expiryDropdown, "BOTTOMLEFT", 15, -8)
 		expiryDateText:SetTextColor(0.7, 0.7, 0.7)
 		
 		-- Reason label
