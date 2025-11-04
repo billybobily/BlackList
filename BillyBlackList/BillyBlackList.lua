@@ -1,3 +1,14 @@
+--[[
+    BillyBlackList - WoW 1.12 (Classic) / Turtle WoW Addon
+    
+    COMPATIBILITY NOTES:
+    - Uses Lua 5.0 (NOT 5.1+)
+    - DO NOT USE: # operator, continue keyword, _G[] indexing
+    - USE INSTEAD: table.getn(), break/return, getglobal()
+    - Frame System: UIParent hierarchy, DIALOG strata preferred
+    - pfUI Integration: Optional UI styling addon (detect and apply conditionally)
+--]]
+
 BlackList = {};
 
 BlackList_Blocked_Channels = {"SAY", "YELL", "WHISPER", "PARTY", "RAID", "RAID_WARNING", "GUILD", "OFFICER", "EMOTE", "TEXT_EMOTE", "CHANNEL", "CHANNEL_JOIN", "CHANNEL_LEAVE"};

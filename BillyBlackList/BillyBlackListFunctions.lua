@@ -1,3 +1,13 @@
+--[[
+    BillyBlackList Functions - Core blacklist management
+    
+    COMPATIBILITY NOTES:
+    - WoW 1.12 (Classic) / Turtle WoW
+    - Lua 5.0: Use table.getn() not #, getglobal() not _G[]
+    - Time functions: time() for timestamps, date() for formatting
+    - Expiry system: nil = forever, number = unix timestamp
+--]]
+
 function BlackList:AddPlayer(player, reason)
 
 	-- handle player
@@ -332,7 +342,7 @@ function BlackList:RemoveExpired()
 		end
 	end
 	
-	if #removed > 0 then
+	if table.getn(removed) > 0 then
 		for _, name in ipairs(removed) do
 			self:AddMessage("BlackList: " .. name .. " expired and was removed.", "yellow")
 		end

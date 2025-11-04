@@ -1,9 +1,13 @@
 --[[
-	BlackList UI - pfUI Integration
+	BillyBlackList UI - pfUI Integration & Frame Management
 	
-	This addon now supports visual integration with pfUI when it's active.
-	When pfUI is detected, BlackList uses the same styling approach as pfUI:
-	hooking into frame creation and applying consistent styling patterns.
+	COMPATIBILITY NOTES:
+	- WoW 1.12 (Classic) / Turtle WoW
+	- Lua 5.0: Use table.getn() not #, getglobal() not _G[]
+	- Frame System: DIALOG strata, UIParent parent, OnUpdate for timers
+	- pfUI Integration: Optional styling addon (detect via pfUI global)
+	- UIDropDownMenu: Classic dropdown system for selections
+	- FauxScrollFrame: For scrollable lists (use FauxScrollFrame_Update)
 	
 	Integration features:
 	- Hooks into BlackList frame initialization like pfUI does for Blizzard frames
