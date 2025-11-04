@@ -651,6 +651,8 @@ function BlackList:ToggleStandaloneWindow()
 		if frame:IsVisible() then
 			frame:Hide()
 		else
+			-- Remove expired entries before showing
+			self:RemoveExpired()
 			frame:Show()
 			self:UpdateStandaloneUI()
 		end
@@ -873,9 +875,14 @@ function BlackList:ShowStandaloneDetails()
 			UIDropDownMenu_AddButton(info, level)
 		end)
 		
+		-- Expiry date display
+		local expiryDateText = detailsFrame:CreateFontString("BlackListStandaloneDetails_ExpiryDate", "OVERLAY", "GameFontNormalSmall")
+		expiryDateText:SetPoint("TOPLEFT", expiryLabel, "BOTTOMLEFT", 0, -5)
+		expiryDateText:SetTextColor(0.7, 0.7, 0.7)
+		
 		-- Reason label
 		local reasonLabel = detailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-		reasonLabel:SetPoint("TOPLEFT", expiryLabel, "BOTTOMLEFT", 0, -15)
+		reasonLabel:SetPoint("TOPLEFT", expiryDateText, "BOTTOMLEFT", 0, -10)
 		reasonLabel:SetText("Reason:")
 		
 		-- Reason text box (scrollable multiline)
@@ -988,6 +995,17 @@ function BlackList:ShowStandaloneDetails()
 			end
 		else
 			UIDropDownMenu_SetSelectedValue(expiryDropdown, 0)
+		end
+	end
+	
+	-- Update expiry date display
+	local expiryDateText = getglobal("BlackListStandaloneDetails_ExpiryDate")
+	if expiryDateText then
+		if player["expiry"] then
+			local expiryDateStr = date("%I:%M%p on %b %d, 20%y", player["expiry"])
+			expiryDateText:SetText("Expires: " .. expiryDateStr)
+		else
+			expiryDateText:SetText("")
 		end
 	end
 	

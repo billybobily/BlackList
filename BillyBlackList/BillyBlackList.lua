@@ -45,10 +45,6 @@ function BlackList:OnLoad()
 	
 	-- Create minimap button
 	self:CreateMinimapButton();
-	
-	-- Set up periodic expiry check (every 5 minutes)
-	self.expiryCheckTimer = 0
-	self.expiryCheckInterval = 300  -- 5 minutes in seconds
 
 end
 
@@ -255,6 +251,8 @@ function BlackList:HandleEvent(event)
 		if (not BlackListOptions) then
 			BlackListOptions = {};
 		end
+		-- Remove expired entries on load
+		self:RemoveExpired()
 	elseif (event == "PLAYER_TARGET_CHANGED") then
 		-- search for player name
 		local name = UnitName("target");
@@ -415,17 +413,3 @@ function BlackList:CreateMinimapButton()
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Minimap button created", 0, 1, 0)
 end
 
--- OnUpdate handler for periodic tasks
-function BlackList:OnUpdate(elapsed)
-	if not self.expiryCheckTimer then
-		self.expiryCheckTimer = 0
-	end
-	
-	self.expiryCheckTimer = self.expiryCheckTimer + elapsed
-	
-	-- Check for expired entries every 5 minutes
-	if self.expiryCheckTimer >= self.expiryCheckInterval then
-		self.expiryCheckTimer = 0
-		self:RemoveExpired()
-	end
-end
