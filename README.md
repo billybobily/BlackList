@@ -4,7 +4,11 @@
 
 Enhanced for Turtle WoW (Classic 1.12)
 
-Billy's Blacklist is a World of Warcraft addon that adds a comprehensive player management system to your Friends Tab on the Social Panel. Unlike the built-in Ignore system which has limits, it lets you track unlimited players with detailed information, custom reasons, and flexible warning options.
+Billy's Blacklist is a World of Warcraft addon that adds a comprehensive player blacklist system to your game. This system helps prevent you from associating with unwanted users
+
+## Why a blacklist?
+
+This addon exists to manage your group invite and raid state, it helps you filter players you do not want to play with. While the ignore list is useful, it does not prevent those players from being present during your events.
 
 ## What it does
 
