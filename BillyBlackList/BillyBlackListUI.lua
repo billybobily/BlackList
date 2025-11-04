@@ -743,23 +743,14 @@ function BlackList:ShowStandaloneDetails()
 			insets = {left = 11, right = 12, top = 12, bottom = 11}
 		})
 		
-		-- Apply pfUI styling on show
+		-- Apply pfUI styling immediately if available (like options frame)
+		if IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
+			pfUI.api.CreateBackdrop(detailsFrame, nil, true)
+			detailsFrame.pfuiStyled = true
+		end
+		
+		-- OnShow handler to close options window
 		detailsFrame:SetScript("OnShow", function()
-			-- Apply pfUI styling if available
-			if IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
-				if not this.pfuiStyled then
-					pfUI.api.CreateBackdrop(this, nil, true)
-					this.pfuiStyled = true
-				end
-				
-				-- Always check and apply close button styling (even after pfuiStyled is set)
-				local closeBtn = this.closeBtn
-				if closeBtn and pfUI.api.SkinCloseButton and not closeBtn.pfuiStyled then
-					closeBtn:ClearAllPoints()
-					pfUI.api.SkinCloseButton(closeBtn, this.backdrop or this, -6, -6)
-					closeBtn.pfuiStyled = true
-				end
-			end
 			-- Close options when details is opened
 			local optionsFrame = getglobal("BlackListOptionsFrame_New")
 			if optionsFrame and optionsFrame:IsVisible() then
@@ -771,11 +762,16 @@ function BlackList:ShowStandaloneDetails()
 		local title = detailsFrame:CreateFontString("BlackListStandaloneDetails_Title", "OVERLAY", "GameFontNormalLarge")
 		title:SetPoint("TOP", detailsFrame, "TOP", 0, -15)
 		
-		-- Close button (will be styled by pfUI in OnShow event if available)
+		-- Close button
 		local closeBtn = CreateFrame("Button", nil, detailsFrame, "UIPanelCloseButton")
-		closeBtn:SetPoint("TOPRIGHT", detailsFrame, "TOPRIGHT", -5, -5)
 		closeBtn:SetScript("OnClick", function() detailsFrame:Hide() end)
-		detailsFrame.closeBtn = closeBtn  -- Store reference for pfUI styling
+		
+		-- Apply pfUI styling to close button immediately if available
+		if IsPfUIActive() and pfUI.api.SkinCloseButton then
+			pfUI.api.SkinCloseButton(closeBtn, detailsFrame.backdrop or detailsFrame, -6, -6)
+		else
+			closeBtn:SetPoint("TOPRIGHT", detailsFrame, "TOPRIGHT", -5, -5)
+		end
 		
 		-- Details window is static, not draggable
 		
