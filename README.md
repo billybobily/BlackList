@@ -14,18 +14,28 @@ The addon now includes a comprehensive options menu where you can control exactl
 
 ## How to use it
 
-Adding someone to your BlackList is easy:
+**Slash Commands:**
 
-- Target a player and type /blacklist or /bl in chat
-- Use the "BlackList Player" button in the BlackList tab
-- Type /blacklist PlayerName to add someone by name
-- Add a reason with /blacklist PlayerName They ninja looted my item
+Add players to your blacklist:
+- `/blacklist` or `/bl` - Add your current target to the blacklist
+- `/blacklist PlayerName` or `/bl PlayerName` - Add a player by name
+- `/blacklist PlayerName Reason text` - Add a player with a custom reason
 
-You can also use /removeblacklist or /removebl to remove players from your list.
+Remove players from your blacklist:
+- `/removeblacklist PlayerName` or `/removebl PlayerName` - Remove a player from the blacklist
 
-To check if any blacklisted players are in your current party or raid, use /blcheck. This will scan your group and alert you if any blacklisted players are present, along with their reasons.
+Check your current group:
+- `/blcheck` - Scan your party or raid for blacklisted players
 
-When you have someone targeted, BlackList will automatically fill in their details like level, class, and race. You can edit this information later by clicking on their name in the list to open the details window.
+**Using the UI:**
+
+You can also manage your blacklist through the interface:
+- Click the BlackList minimap icon to open the main window
+- Use the "Add Player" button to add someone to your blacklist
+- Click on a player's name to view or edit their details and reason
+- Use the "Remove" button to remove the selected player
+
+When you have someone targeted, BlackList will automatically fill in their details like level, class, and race. You can edit this information later in the details window.
 
 ## Options and features
 
