@@ -819,7 +819,7 @@ function BlackList:ShowStandaloneDetails()
 		expiryLabel:SetText("Duration:")
 		
 		local expiryDropdown = CreateFrame("Frame", "BlackListStandaloneDetails_ExpiryDropdown", detailsFrame, "UIDropDownMenuTemplate")
-		expiryDropdown:SetPoint("LEFT", expiryLabel, "RIGHT", -10, -3)
+		expiryDropdown:SetPoint("TOPLEFT", expiryLabel, "BOTTOMLEFT", -15, -5)
 		
 		UIDropDownMenu_SetWidth(100, expiryDropdown)
 		UIDropDownMenu_Initialize(expiryDropdown, function(self, level)
@@ -877,7 +877,7 @@ function BlackList:ShowStandaloneDetails()
 		
 		-- Expiry date display
 		local expiryDateText = detailsFrame:CreateFontString("BlackListStandaloneDetails_ExpiryDate", "OVERLAY", "GameFontNormalSmall")
-		expiryDateText:SetPoint("TOPLEFT", expiryLabel, "BOTTOMLEFT", 0, -5)
+		expiryDateText:SetPoint("TOPLEFT", expiryDropdown, "BOTTOMLEFT", 15, 0)
 		expiryDateText:SetTextColor(0.7, 0.7, 0.7)
 		
 		-- Reason label
@@ -1212,6 +1212,23 @@ end
 
 -- Update expiry display after changing dropdown
 function BlackList:UpdateDetailsExpiry()
+	-- Update the expiry date display in the details window
+	local detailsFrame = getglobal("BlackListStandaloneDetails")
+	if detailsFrame and detailsFrame.currentPlayerIndex then
+		local player = self:GetPlayerByIndex(detailsFrame.currentPlayerIndex)
+		if player then
+			local expiryDateText = getglobal("BlackListStandaloneDetails_ExpiryDate")
+			if expiryDateText then
+				if player["expiry"] then
+					local expiryDateStr = date("%I:%M%p on %b %d, 20%y", player["expiry"])
+					expiryDateText:SetText("Expires: " .. expiryDateStr)
+				else
+					expiryDateText:SetText("")
+				end
+			end
+		end
+	end
+	
 	-- Refresh the main list to show updated expiry
 	self:UpdateStandaloneUI()
 end
