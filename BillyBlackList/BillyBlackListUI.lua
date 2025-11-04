@@ -473,16 +473,19 @@ function BlackList:CreateStandaloneWindow()
 	
 	-- Apply pfUI styling on first show (when pfUI is fully loaded)
 	frame:SetScript("OnShow", function()
-		if not this.pfuiStyled and IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
-			DEFAULT_CHAT_FRAME:AddMessage("BlackList: Applying pfUI styling to main window", 0, 1, 0)
-			pfUI.api.CreateBackdrop(this, nil, true)
-			this.pfuiStyled = true
+		if IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
+			if not this.pfuiStyled then
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: Applying pfUI styling to main window", 0, 1, 0)
+				pfUI.api.CreateBackdrop(this, nil, true)
+				this.pfuiStyled = true
+			end
 			
-			-- Apply pfUI styling to close button after backdrop is created
+			-- Always check and apply close button styling (even after pfuiStyled is set)
 			local closeBtn = this.closeBtn
-			if closeBtn and pfUI.api.SkinCloseButton then
+			if closeBtn and pfUI.api.SkinCloseButton and not closeBtn.pfuiStyled then
 				closeBtn:ClearAllPoints()
 				pfUI.api.SkinCloseButton(closeBtn, this.backdrop or this, -6, -6)
+				closeBtn.pfuiStyled = true
 			end
 		end
 	end)
@@ -722,13 +725,14 @@ function BlackList:ShowStandaloneDetails()
 				if not this.pfuiStyled then
 					pfUI.api.CreateBackdrop(this, nil, true)
 					this.pfuiStyled = true
-					
-					-- Apply pfUI styling to close button after backdrop is created
-					local closeBtn = this.closeBtn
-					if closeBtn and pfUI.api.SkinCloseButton then
-						closeBtn:ClearAllPoints()
-						pfUI.api.SkinCloseButton(closeBtn, this.backdrop or this, -6, -6)
-					end
+				end
+				
+				-- Always check and apply close button styling (even after pfuiStyled is set)
+				local closeBtn = this.closeBtn
+				if closeBtn and pfUI.api.SkinCloseButton and not closeBtn.pfuiStyled then
+					closeBtn:ClearAllPoints()
+					pfUI.api.SkinCloseButton(closeBtn, this.backdrop or this, -6, -6)
+					closeBtn.pfuiStyled = true
 				end
 			end
 			-- Close options when details is opened
