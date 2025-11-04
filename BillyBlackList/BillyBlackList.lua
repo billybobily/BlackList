@@ -418,4 +418,3 @@ function BlackList:OnUpdate(elapsed)
 		self:RemoveExpired()
 	end
 end
-end
