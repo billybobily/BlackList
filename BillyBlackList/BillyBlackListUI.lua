@@ -833,7 +833,12 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 0
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 0)
-				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)
+				-- Immediately update the expiry text
+				local expiryDateText = getglobal("BlackListStandaloneDetails_ExpiryDate")
+				if expiryDateText then
+					expiryDateText:SetText("Expires: Never")
+				end
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -843,7 +848,16 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 1
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 1)
-				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)
+				-- Immediately update the expiry text
+				local player = BlackList:GetPlayerByIndex(detailsFrame.currentPlayerIndex)
+				if player and player["expiry"] then
+					local expiryDateText = getglobal("BlackListStandaloneDetails_ExpiryDate")
+					if expiryDateText then
+						local expiryDateStr = date("%I:%M%p on %b %d, 20%y", player["expiry"])
+						expiryDateText:SetText("Expires: " .. expiryDateStr)
+					end
+				end
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -853,7 +867,16 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 2
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 2)
-				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)
+				-- Immediately update the expiry text
+				local player = BlackList:GetPlayerByIndex(detailsFrame.currentPlayerIndex)
+				if player and player["expiry"] then
+					local expiryDateText = getglobal("BlackListStandaloneDetails_ExpiryDate")
+					if expiryDateText then
+						local expiryDateStr = date("%I:%M%p on %b %d, 20%y", player["expiry"])
+						expiryDateText:SetText("Expires: " .. expiryDateStr)
+					end
+				end
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -863,7 +886,16 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 3
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 3)
-				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)
+				-- Immediately update the expiry text
+				local player = BlackList:GetPlayerByIndex(detailsFrame.currentPlayerIndex)
+				if player and player["expiry"] then
+					local expiryDateText = getglobal("BlackListStandaloneDetails_ExpiryDate")
+					if expiryDateText then
+						local expiryDateStr = date("%I:%M%p on %b %d, 20%y", player["expiry"])
+						expiryDateText:SetText("Expires: " .. expiryDateStr)
+					end
+				end
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -873,7 +905,16 @@ function BlackList:ShowStandaloneDetails()
 			info.value = 4
 			info.func = function()
 				BlackList:SetExpiry(detailsFrame.currentPlayerIndex, 4)
-				UIDropDownMenu_SetText("", expiryDropdown)  -- Reset to empty
+				UIDropDownMenu_SetText("", expiryDropdown)
+				-- Immediately update the expiry text
+				local player = BlackList:GetPlayerByIndex(detailsFrame.currentPlayerIndex)
+				if player and player["expiry"] then
+					local expiryDateText = getglobal("BlackListStandaloneDetails_ExpiryDate")
+					if expiryDateText then
+						local expiryDateStr = date("%I:%M%p on %b %d, 20%y", player["expiry"])
+						expiryDateText:SetText("Expires: " .. expiryDateStr)
+					end
+				end
 				BlackList:UpdateDetailsExpiry()
 			end
 			UIDropDownMenu_AddButton(info, level)
@@ -881,7 +922,7 @@ function BlackList:ShowStandaloneDetails()
 		
 		-- Expiry date display
 		local expiryDateText = detailsFrame:CreateFontString("BlackListStandaloneDetails_ExpiryDate", "OVERLAY", "GameFontNormalSmall")
-		expiryDateText:SetPoint("TOPLEFT", expiryDropdown, "BOTTOMLEFT", 15, -8)
+		expiryDateText:SetPoint("TOPLEFT", expiryDropdown, "BOTTOMLEFT", 15, -3)
 		expiryDateText:SetTextColor(0.7, 0.7, 0.7)
 		
 		-- Reason label
