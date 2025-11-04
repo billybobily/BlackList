@@ -141,6 +141,7 @@ local function CreateBlackListFrame(name, width, parent, x, y)
 	local f = CreateFrame("Frame", name, parent)
 	f:SetWidth(width)
 	f:SetHeight(400)  -- Set a reasonable height
+	f:SetFrameStrata("DIALOG")  -- Ensure it appears above other UI elements
 	f:SetBackdrop({
 		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", 
 		tile = true, tileSize = 32,
@@ -435,6 +436,7 @@ function BlackList:CreateStandaloneWindow()
 	local frame = CreateFrame("Frame", "BlackListStandaloneFrame", UIParent)
 	frame:SetWidth(350)
 	frame:SetHeight(450)
+	frame:SetFrameStrata("DIALOG")  -- Ensure it appears above other UI elements
 	-- Position like FriendsFrame/CharacterFrame (left side of screen)
 	frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -116)
 	frame:SetMovable(true)
@@ -685,6 +687,7 @@ function BlackList:ShowStandaloneDetails()
 		detailsFrame = CreateFrame("Frame", "BlackListStandaloneDetailsFrame", UIParent)
 		detailsFrame:SetWidth(300)
 		detailsFrame:SetHeight(250)
+		detailsFrame:SetFrameStrata("DIALOG")  -- Ensure it appears above other UI elements
 		-- Position aligned with upper right corner of main frame
 		local mainFrame = getglobal("BlackListStandaloneFrame")
 		if mainFrame then
