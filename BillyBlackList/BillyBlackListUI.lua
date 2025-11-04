@@ -681,7 +681,20 @@ function BlackList:UpdateStandaloneUI()
 			button:SetID(index)
 			
 			if index <= numBlackLists then
-				nameText:SetText(self:GetNameByIndex(index))
+				local player = self:GetPlayerByIndex(index)
+				local displayText = player["name"]
+				
+				-- Add reason in brackets if it exists
+				if player["reason"] and player["reason"] ~= "" then
+					local reason = player["reason"]
+					-- Truncate reason if too long (max 30 characters)
+					if string.len(reason) > 30 then
+						reason = string.sub(reason, 1, 27) .. "..."
+					end
+					displayText = player["name"] .. " |cFFFFFFFF[" .. reason .. "]|r"
+				end
+				
+				nameText:SetText(displayText)
 				button:Show()
 				
 				-- Update highlight
