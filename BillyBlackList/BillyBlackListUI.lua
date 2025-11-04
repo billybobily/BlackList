@@ -410,6 +410,26 @@ function BlackList:InsertUI()
 
 end
 
+-- Reposition child windows relative to main frame
+function BlackList:RepositionChildWindows()
+	local mainFrame = getglobal("BlackListStandaloneFrame")
+	if not mainFrame then return end
+	
+	-- Reposition details frame (aligned with upper right corner)
+	local detailsFrame = getglobal("BlackListStandaloneDetailsFrame")
+	if detailsFrame and detailsFrame:IsVisible() then
+		detailsFrame:ClearAllPoints()
+		detailsFrame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
+	end
+	
+	-- Reposition options frame (aligned with upper right corner)
+	local optionsFrame = getglobal("BlackListOptionsFrame_New")
+	if optionsFrame and optionsFrame:IsVisible() then
+		optionsFrame:ClearAllPoints()
+		optionsFrame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
+	end
+end
+
 function BlackList:CreateStandaloneWindow()
 	-- Create main frame
 	local frame = CreateFrame("Frame", "BlackListStandaloneFrame", UIParent)
@@ -417,10 +437,21 @@ function BlackList:CreateStandaloneWindow()
 	frame:SetHeight(450)
 	-- Position like FriendsFrame/CharacterFrame (left side of screen)
 	frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -116)
-	frame:SetMovable(false)
+	frame:SetMovable(true)
 	frame:EnableMouse(true)
 	frame:SetClampedToScreen(true)
 	frame:Hide()
+	
+	-- Make frame draggable by creating a drag area at the top
+	frame:RegisterForDrag("LeftButton")
+	frame:SetScript("OnDragStart", function()
+		this:StartMoving()
+	end)
+	frame:SetScript("OnDragStop", function()
+		this:StopMovingOrSizing()
+		-- Reposition child windows when main frame moves
+		BlackList:RepositionChildWindows()
+	end)
 	
 	-- Set default backdrop first
 	frame:SetBackdrop({
@@ -448,7 +479,20 @@ function BlackList:CreateStandaloneWindow()
 	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 	closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, -5)
 	
-	-- Remove dragging scripts since it's now static
+	-- Add title bar for dragging indication
+	local dragArea = CreateFrame("Frame", nil, frame)
+	dragArea:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+	dragArea:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, 0)
+	dragArea:SetHeight(40)
+	dragArea:EnableMouse(true)
+	dragArea:RegisterForDrag("LeftButton")
+	dragArea:SetScript("OnDragStart", function()
+		frame:StartMoving()
+	end)
+	dragArea:SetScript("OnDragStop", function()
+		frame:StopMovingOrSizing()
+		BlackList:RepositionChildWindows()
+	end)
 	
 	-- Create scroll frame for player list
 	local scrollFrame = CreateFrame("ScrollFrame", "BlackListStandaloneScrollFrame", frame, "FauxScrollFrameTemplate")
@@ -632,7 +676,7 @@ function BlackList:ShowStandaloneDetails()
 		detailsFrame = CreateFrame("Frame", "BlackListStandaloneDetailsFrame", UIParent)
 		detailsFrame:SetWidth(300)
 		detailsFrame:SetHeight(250)
-		-- Position to the right of the main BlackList window
+		-- Position aligned with upper right corner of main frame
 		local mainFrame = getglobal("BlackListStandaloneFrame")
 		if mainFrame then
 			detailsFrame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
