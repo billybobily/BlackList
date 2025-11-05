@@ -1057,12 +1057,16 @@ function BlackList:ShowStandaloneDetails()
 			SaveReason()
 		end)
 		
+		-- Store reference to reasonText for the click handler
+		detailsFrame.reasonText = reasonText
+		
 		-- Create a handler to clear focus when clicking outside the text box
 		local clickHandler = CreateFrame("Frame")
 		clickHandler:SetAllPoints(UIParent)
 		clickHandler:SetFrameStrata("TOOLTIP")
 		clickHandler:EnableMouse(true)
 		clickHandler:Hide()
+		clickHandler.detailsFrame = detailsFrame
 		
 		-- Show the click handler when text box gains focus
 		reasonText:SetScript("OnEditFocusGained", function()
@@ -1071,8 +1075,9 @@ function BlackList:ShowStandaloneDetails()
 		
 		-- Hide handler and save when clicking outside
 		clickHandler:SetScript("OnMouseDown", function()
-			if reasonText and reasonText:HasFocus() then
-				reasonText:ClearFocus()
+			local textBox = this.detailsFrame and this.detailsFrame.reasonText
+			if textBox and textBox.HasFocus and textBox:HasFocus() then
+				textBox:ClearFocus()
 			end
 			this:Hide()
 		end)
