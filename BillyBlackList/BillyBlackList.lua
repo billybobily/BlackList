@@ -63,6 +63,7 @@ end
 
 local Orig_ChatFrame_OnEvent;
 local Orig_InviteByName;
+local Orig_UnitPopup_OnClick;
 
 -- Hooks onto the functions needed
 function BlackList:HookFunctions()
@@ -73,9 +74,14 @@ function BlackList:HookFunctions()
 	Orig_InviteByName = InviteByName;
 	InviteByName = BlackList_InviteByName;
 	
+	-- Hook UnitPopup menu clicks (for right-click portrait invites)
+	Orig_UnitPopup_OnClick = UnitPopup_OnClick;
+	UnitPopup_OnClick = BlackList_UnitPopup_OnClick;
+	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed", 0, 1, 0);
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: InviteByName hook = " .. tostring(InviteByName == BlackList_InviteByName), 0, 1, 0);
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Orig_InviteByName = " .. tostring(Orig_InviteByName ~= nil), 0, 1, 0);
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: UnitPopup_OnClick hook = " .. tostring(UnitPopup_OnClick == BlackList_UnitPopup_OnClick), 0, 1, 0);
 
 end
 
@@ -238,6 +244,36 @@ function BlackList_InviteByName(name)
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Allowing invite to " .. name, 0, 1, 0)
 	Orig_InviteByName(name);
 
+end
+
+-- Hooked UnitPopup_OnClick function (for right-click portrait invites)
+function BlackList_UnitPopup_OnClick()
+	-- Get the dropdown info
+	local dropdownFrame = getglobal(UIDROPDOWNMENU_INIT_MENU);
+	local button = this.value;
+	local unit = dropdownFrame.unit;
+	local name = dropdownFrame.name;
+	
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: UnitPopup_OnClick - button: " .. tostring(button) .. ", unit: " .. tostring(unit) .. ", name: " .. tostring(name), 1, 1, 0)
+	
+	-- Check if this is a party invite action
+	if button == "PARTY_INVITE" or button == "RAID_INVITE" then
+		local targetName = name or (unit and UnitName(unit))
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Invite attempt for: " .. tostring(targetName), 1, 1, 0)
+		
+		if targetName and BlackList:GetOption("preventMyInvites", true) then
+			if BlackList:GetIndexByName(targetName) > 0 then
+				BlackList:AddMessage("BlackList: " .. targetName .. " is blacklisted, preventing you from inviting them.", "yellow");
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: BLOCKING UnitPopup invite to " .. targetName, 1, 0, 0)
+				-- Close the dropdown but don't call the original function
+				CloseDropDownMenus();
+				return;
+			end
+		end
+	end
+	
+	-- Call the original function for all other cases
+	Orig_UnitPopup_OnClick();
 end
 
 -- Registers slash cmds
