@@ -226,7 +226,9 @@ function BlackList_MessageEventHandler(event)
 							table.insert(Already_Warned_For["WHISPER"], name);
 							warnplayer = true;
 							warnname = name;
-							DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: Setting up warning for " .. name, 0.5, 0.5, 0.5);
+							if BlackList:GetOption("debugMode", false) then
+								DEFAULT_CHAT_FRAME:AddMessage("BlackList DEBUG: Setting up warning for " .. name, 0.5, 0.5, 0.5);
+							end
 						end
 					end
 				end

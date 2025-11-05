@@ -259,13 +259,13 @@ local function CreateNewOptionsFrame()
 	end)
 	pad = pad - 22
 	
-	local debugMode, debugModeText = CreateBlackListOption(f, "BL_DebugMode", "Enable debug messages (for troubleshooting)", pad, function(checked)
-		BlackList:ToggleOption("debugMode", checked)
+	local showReasons, showReasonsText = CreateBlackListOption(f, "BL_ShowReasons", "Add blacklist reason to all alerts", pad, function(checked)
+		BlackList:ToggleOption("showReasons", checked)
 	end)
 	pad = pad - 22
 	
-	local showReasons, showReasonsText = CreateBlackListOption(f, "BL_ShowReasons", "Show blacklist reason in alerts", pad, function(checked)
-		BlackList:ToggleOption("showReasons", checked)
+	local debugMode, debugModeText = CreateBlackListOption(f, "BL_DebugMode", "Enable debug messages", pad, function(checked)
+		BlackList:ToggleOption("debugMode", checked)
 	end)
 	pad = pad - 32  -- Extra space before next section
 	
@@ -1263,11 +1263,15 @@ function BlackList:ToggleOption(optionName, value)
 	-- Clear warning cache when whisper options change
 	if optionName == "preventWhispers" or optionName == "warnWhispers" then
 		Already_Warned_For["WHISPER"] = {};
-		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Cleared whisper warning cache", 1, 1, 0);
+		if self:GetOption("debugMode", false) then
+			DEFAULT_CHAT_FRAME:AddMessage("BlackList: Cleared whisper warning cache", 1, 1, 0);
+		end
 	end
 	
 	-- Debug output
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Set " .. optionName .. " = " .. tostring(value), 1, 1, 0);
+	if self:GetOption("debugMode", false) then
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Set " .. optionName .. " = " .. tostring(value), 1, 1, 0);
+	end
 end
 
 function BlackList:GetOption(optionName, defaultValue)
