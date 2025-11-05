@@ -1275,7 +1275,7 @@ function BlackList:UpdateOptionsUI()
 	getglobal("BlackListOptionsCheckButton3"):SetChecked(self:GetOption("preventWhispers", true));
 	getglobal("BlackListOptionsCheckButton4"):SetChecked(self:GetOption("warnWhispers", true));
 	getglobal("BlackListOptionsCheckButton5"):SetChecked(self:GetOption("preventInvites", true));
-	getglobal("BlackListOptionsCheckButton6"):SetChecked(self:GetOption("preventMyInvites", false));
+	getglobal("BlackListOptionsCheckButton6"):SetChecked(self:GetOption("preventMyInvites", true));
 	getglobal("BlackListOptionsCheckButton7"):SetChecked(self:GetOption("warnPartyJoin", true));
 end
 
