@@ -997,7 +997,9 @@ function BlackList:ShowStandaloneDetails()
 					local text = reasonText:GetText()
 					if text ~= player["reason"] then
 						player["reason"] = text
-						DEFAULT_CHAT_FRAME:AddMessage("BlackList: Reason saved for " .. player["name"], 0, 1, 0)
+						if BlackList:GetOption("debugMode", false) then
+							DEFAULT_CHAT_FRAME:AddMessage("BlackList: Reason saved for " .. player["name"], 0, 1, 0)
+						end
 					end
 				end
 			end
