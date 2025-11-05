@@ -438,46 +438,8 @@ function BlackList:InsertUI()
 		exclusive = 1,
 		hideOnEscape = 1
 		};
-	
-	-- Setup click-outside-to-save for FriendsFrame details EditBox
-	self:SetupDetailsClickHandler();
 
 end
-
--- Setup click handler for BlackListDetailsFrameReasonTextBox (XML frame)
-function BlackList:SetupDetailsClickHandler()
-	local reasonText = getglobal("BlackListDetailsFrameReasonTextBox")
-	if not reasonText then return end
-	
-	-- Create a handler to clear focus when clicking outside the text box
-	local clickHandler = CreateFrame("Frame", "BlackListDetailsClickHandler")
-	clickHandler:SetAllPoints(UIParent)
-	clickHandler:SetFrameStrata("TOOLTIP")
-	clickHandler:EnableMouse(true)
-	clickHandler:Hide()
-	
-	-- Show the click handler when text box gains focus
-	reasonText:SetScript("OnEditFocusGained", function()
-		clickHandler:Show()
-	end)
-	
-	-- Hide handler when clicking outside
-	clickHandler:SetScript("OnMouseDown", function()
-		local textBox = getglobal("BlackListDetailsFrameReasonTextBox")
-		if textBox and textBox:HasFocus() then
-			textBox:ClearFocus()
-		end
-		this:Hide()
-	end)
-	
-	-- Hide handler when focus is lost
-	local origFocusLost = reasonText:GetScript("OnEditFocusLost")
-	reasonText:SetScript("OnEditFocusLost", function()
-		clickHandler:Hide()
-		if origFocusLost then origFocusLost() end
-	end)
-end
-
 -- Reposition child windows relative to main frame
 function BlackList:RepositionChildWindows()
 	local mainFrame = getglobal("BlackListStandaloneFrame")
@@ -1050,48 +1012,15 @@ function BlackList:ShowStandaloneDetails()
 			end
 		end
 		
-		-- Save on multiple events to ensure consistency
-		reasonText:SetScript("OnEditFocusLost", SaveReason)
+		-- Save on Escape key
 		reasonText:SetScript("OnEscapePressed", function()
 			this:ClearFocus()
-			SaveReason()
-		end)
-		
-		-- Store reference to reasonText for the click handler
-		detailsFrame.reasonText = reasonText
-		
-		-- Create a handler to clear focus when clicking outside the text box
-		local clickHandler = CreateFrame("Frame")
-		clickHandler:SetAllPoints(UIParent)
-		clickHandler:SetFrameStrata("TOOLTIP")
-		clickHandler:EnableMouse(true)
-		clickHandler:Hide()
-		clickHandler.detailsFrame = detailsFrame
-		
-		-- Show the click handler when text box gains focus
-		reasonText:SetScript("OnEditFocusGained", function()
-			clickHandler:Show()
-		end)
-		
-		-- Hide handler and save when clicking outside
-		clickHandler:SetScript("OnMouseDown", function()
-			local textBox = this.detailsFrame and this.detailsFrame.reasonText
-			if textBox and textBox.HasFocus and textBox:HasFocus() then
-				textBox:ClearFocus()
-			end
-			this:Hide()
-		end)
-		
-		-- Update OnEditFocusLost to hide the handler
-		reasonText:SetScript("OnEditFocusLost", function()
-			clickHandler:Hide()
 			SaveReason()
 		end)
 		
 		-- Save when details window is hidden
 		detailsFrame:SetScript("OnHide", function()
 			CloseDropDownMenus()
-			clickHandler:Hide()
 			SaveReason()
 		end)
 		

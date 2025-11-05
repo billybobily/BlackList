@@ -615,11 +615,7 @@
 							<OnEscapePressed>
 								this:ClearFocus();
 							</OnEscapePressed>
-							<OnEditFocusLost>
-								BlackList:UpdateDetails(BlackList:GetSelectedBlackList(), nil, nil, this:GetText());
-							</OnEditFocusLost>
 							<OnTextChanged>
-								-- Update on text change but also save on focus lost
 								BlackList:UpdateDetails(BlackList:GetSelectedBlackList(), nil, nil, this:GetText());
 							</OnTextChanged>
 						</Scripts>
