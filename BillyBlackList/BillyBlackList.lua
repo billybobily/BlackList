@@ -74,6 +74,8 @@ function BlackList:HookFunctions()
 	InviteByName = BlackList_InviteByName;
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed", 0, 1, 0);
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: InviteByName hook = " .. tostring(InviteByName == BlackList_InviteByName), 0, 1, 0);
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Orig_InviteByName = " .. tostring(Orig_InviteByName ~= nil), 0, 1, 0);
 
 end
 
