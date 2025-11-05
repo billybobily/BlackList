@@ -1301,9 +1301,13 @@ function BlackList:UpdateUI()
 			self:SetSelectedBlackList(1);
 			selectedBlackList = 1;
 		end
-		FriendsFrameRemovePlayerButton:Enable();
+		if FriendsFrameRemovePlayerButton then
+			FriendsFrameRemovePlayerButton:Enable();
+		end
 	else
-		FriendsFrameRemovePlayerButton:Disable();
+		if FriendsFrameRemovePlayerButton then
+			FriendsFrameRemovePlayerButton:Disable();
+		end
 	end
 
 	local blacklistOffset = FauxScrollFrame_GetOffset(FriendsFrameBlackListScrollFrame);
