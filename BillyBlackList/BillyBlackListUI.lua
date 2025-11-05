@@ -1005,12 +1005,6 @@ function BlackList:ShowStandaloneDetails()
 						if BlackList:GetOption("debugMode", false) then
 							DEFAULT_CHAT_FRAME:AddMessage("BlackList: Reason saved for " .. player["name"], 0, 1, 0)
 						end
-						-- Defer UI refresh to avoid errors during OnHide
-						local frame = CreateFrame("Frame")
-						frame:SetScript("OnUpdate", function()
-							BlackList:UpdateUI()
-							this:SetScript("OnUpdate", nil)
-						end)
 					end
 				end
 			end
@@ -1022,10 +1016,15 @@ function BlackList:ShowStandaloneDetails()
 			SaveReason()
 		end)
 		
-		-- Save when details window is hidden
+		-- Save when details window is hidden, then refresh UI after a delay
 		detailsFrame:SetScript("OnHide", function()
 			CloseDropDownMenus()
 			SaveReason()
+			-- Refresh UI after window is fully hidden (next frame)
+			this:SetScript("OnUpdate", function()
+				BlackList:UpdateUI()
+				this:SetScript("OnUpdate", nil)
+			end)
 		end)
 		
 		-- Store reference to SaveReason so it can be called from outside
