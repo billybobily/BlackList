@@ -219,14 +219,21 @@ end
 
 -- Hooked InviteByName function
 function BlackList_InviteByName(name)
-
+	-- Debug: Always log when this function is called
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: InviteByName called for: " .. tostring(name), 0, 1, 1)
+	
 	if (BlackList:GetOption("preventMyInvites", true)) then
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: preventMyInvites is ENABLED", 0, 1, 1)
 		if (BlackList:GetIndexByName(name) > 0) then
 			BlackList:AddMessage("BlackList: " .. name .. " is blacklisted, preventing you from inviting them.", "yellow");
+			DEFAULT_CHAT_FRAME:AddMessage("BlackList: BLOCKING invite to " .. name, 1, 0, 0)
 			return;
 		end
+	else
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: preventMyInvites is DISABLED", 0, 1, 1)
 	end
 
+	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Allowing invite to " .. name, 0, 1, 0)
 	Orig_InviteByName(name);
 
 end
