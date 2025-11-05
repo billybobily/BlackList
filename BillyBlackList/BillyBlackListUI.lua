@@ -1005,8 +1005,12 @@ function BlackList:ShowStandaloneDetails()
 						if BlackList:GetOption("debugMode", false) then
 							DEFAULT_CHAT_FRAME:AddMessage("BlackList: Reason saved for " .. player["name"], 0, 1, 0)
 						end
-						-- Refresh the main window list to show updated reason
-						BlackList:UpdateUI()
+						-- Defer UI refresh to avoid errors during OnHide
+						local frame = CreateFrame("Frame")
+						frame:SetScript("OnUpdate", function()
+							BlackList:UpdateUI()
+							this:SetScript("OnUpdate", nil)
+						end)
 					end
 				end
 			end

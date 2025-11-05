@@ -123,8 +123,12 @@ function BlackList:UpdateDetails(index, reason)
 	end
 	if (reason ~= nil) then
 		player["reason"] = reason;
-		-- Refresh the main window list to show updated reason
-		self:UpdateUI();
+		-- Defer UI refresh to avoid errors during frame updates
+		local frame = CreateFrame("Frame")
+		frame:SetScript("OnUpdate", function()
+			BlackList:UpdateUI()
+			this:SetScript("OnUpdate", nil)
+		end)
 	end
 
 	table.remove(BlackListedPlayers[GetRealmName()], index);
