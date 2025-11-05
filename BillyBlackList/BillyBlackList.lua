@@ -84,10 +84,35 @@ function BlackList_ChatFrame_OnEvent(event)
 	if event == "CHAT_MSG_WHISPER" then
 		local name = arg2;
 		
+		-- Helper function to check if player is on ignore list (standard or SuperIgnore)
+		local function IsIgnored(playerName)
+			-- Check if SuperIgnore is loaded and use its API
+			if SI_FilterIsPlayerIgnored then
+				-- SuperIgnore's function checks its extended ignore list
+				if SI_FilterIsPlayerIgnored(playerName) then
+					return true
+				end
+			end
+			
+			-- Also check standard ignore list (50 player limit)
+			for i = 1, GetNumIgnores() do
+				if GetIgnoreName(i) == playerName then
+					return true
+				end
+			end
+			return false
+		end
+		
 		-- Check if player is blacklisted
 		local blacklistIndex = BlackList:GetIndexByName(name)
 		if blacklistIndex > 0 then
 			local player = BlackList:GetPlayerByIndex(blacklistIndex);
+			
+			-- If player is BOTH blacklisted AND on ignore list, ALWAYS block
+			if IsIgnored(name) then
+				-- Block completely - don't call original handler or show warnings
+				return;
+			end
 			
 			-- If prevent whispers is enabled, ALWAYS block (even if also on ignore list)
 			if (BlackList:GetOption("preventWhispers", true)) then
