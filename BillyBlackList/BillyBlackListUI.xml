@@ -704,7 +704,7 @@
 				</Texture>
 			</Layer>
 			<Layer level="ARTWORK">
-				<FontString name="BlackListOptionsTitle" inherits="GameFontNormal" text="BlackList Options">
+				<FontString name="BlackListOptionsTitle" inherits="GameFontNormal" text="Blacklist Options">
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>

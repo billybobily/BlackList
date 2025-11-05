@@ -181,7 +181,9 @@ local function CreateBlackListOption(frame, name, desc, pad, onclick)
 	c:SetWidth(20)
 	c:SetPoint("TOPLEFT", frame, "TOPLEFT", 15, pad)
 	c:SetScript("OnClick", function()
-		onclick(c:GetChecked())
+		-- Convert GetChecked() result (1/nil) to proper boolean (true/false)
+		local checked = c:GetChecked() and true or false
+		onclick(checked)
 	end)
 	
 	-- Apply pfUI styling if available
@@ -240,7 +242,7 @@ local function CreateNewOptionsFrame()
 	local pad = -15
 	
 	-- Title
-	CreateBlackListHeader(f, "BlackList Options", 14, pad)
+	CreateBlackListHeader(f, "Blacklist Options", 14, pad)
 	pad = pad - 25
 	
 	-- General Settings Section
@@ -456,6 +458,9 @@ function BlackList:CreateStandaloneWindow()
 	frame:SetClampedToScreen(true)
 	frame:Hide()
 	
+	-- Add to UISpecialFrames so Escape key closes it
+	table.insert(UISpecialFrames, "BlackListStandaloneFrame")
+	
 	-- Make frame draggable by creating a drag area at the top
 	frame:RegisterForDrag("LeftButton")
 	frame:SetScript("OnDragStart", function()
@@ -497,7 +502,7 @@ function BlackList:CreateStandaloneWindow()
 	-- Title
 	local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	title:SetPoint("TOP", frame, "TOP", 0, -15)
-	title:SetText("Black List")
+	title:SetText("Blacklist")
 	
 	-- Close button (will be styled by pfUI in OnShow event if available)
 	local closeBtn = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -1117,7 +1122,7 @@ function BlackList:ShowTab()
 	FriendsFrameTopRight:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopRight");
 	FriendsFrameBottomLeft:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-BotLeft");
 	FriendsFrameBottomRight:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-BotRight");
-	FriendsFrameTitleText:SetText("Black List");
+	FriendsFrameTitleText:SetText("Blacklist");
 	FriendsFrame_ShowSubFrame("BlackListFrame");
 	self:UpdateUI();
 
