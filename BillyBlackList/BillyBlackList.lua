@@ -21,6 +21,9 @@ Already_Warned_For["PARTY"] = {};
 
 BlackListedPlayers = {};
 
+-- Track previous party size to detect joins vs leaves
+local PreviousPartySize = 0;
+
 local SLASH_TYPE_ADD = 1;
 local SLASH_TYPE_REMOVE = 2;
 
@@ -418,25 +421,19 @@ function BlackList:HandleEvent(event)
 			end
 		end
 	elseif (event == "PARTY_MEMBERS_CHANGED") then
-		for i = 0, GetNumPartyMembers(), 1 do
-			-- search for player name
-			local name = UnitName("party" .. i);
-			if (BlackList:GetIndexByName(name) > 0) then
-				local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
+		-- Only warn when party size increases (someone joined), not when it decreases (someone left)
+		local currentPartySize = GetNumPartyMembers();
+		
+		if currentPartySize > PreviousPartySize then
+			-- Party grew, check for blacklisted players
+			for i = 0, currentPartySize, 1 do
+				-- search for player name
+				local name = UnitName("party" .. i);
+				if (BlackList:GetIndexByName(name) > 0) then
+					local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
 
-				if (BlackList:GetOption("warnPartyJoin", true)) then
-					-- warn player
-					local alreadywarned = false;
-
-					for key, warnedname in pairs(Already_Warned_For["PARTY"]) do
-						if (name == warnedname) then
-							alreadywarned = true;
-						end
-					end
-
-					if (not alreadywarned) then
-						table.insert(Already_Warned_For["PARTY"], name);
-						
+					if (BlackList:GetOption("warnPartyJoin", true)) then
+						-- Always warn about blacklisted players in party (no cache)
 						-- Play warning sound if enabled
 						if (BlackList:GetOption("playSounds", true)) then
 							PlaySound("RaidWarning");
@@ -454,6 +451,9 @@ function BlackList:HandleEvent(event)
 				end
 			end
 		end
+		
+		-- Update the tracked party size
+		PreviousPartySize = currentPartySize;
 	end
 
 end
