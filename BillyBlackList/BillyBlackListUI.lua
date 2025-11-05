@@ -813,13 +813,15 @@ function BlackList:ShowStandaloneDetails()
 			detailsFrame.pfuiStyled = true
 		end
 		
-		-- OnShow handler to close options window
+		-- OnShow handler to close options window and refresh main list
 		detailsFrame:SetScript("OnShow", function()
 			-- Close options when details is opened
 			local optionsFrame = getglobal("BlackListOptionsFrame_New")
 			if optionsFrame and optionsFrame:IsVisible() then
 				optionsFrame:Hide()
 			end
+			-- Refresh main window to show any saved changes
+			BlackList:UpdateUI()
 		end)
 		
 		-- Title
@@ -1016,15 +1018,10 @@ function BlackList:ShowStandaloneDetails()
 			SaveReason()
 		end)
 		
-		-- Save when details window is hidden, then refresh UI after a delay
+		-- Save when details window is hidden
 		detailsFrame:SetScript("OnHide", function()
 			CloseDropDownMenus()
 			SaveReason()
-			-- Refresh UI after window is fully hidden (next frame)
-			this:SetScript("OnUpdate", function()
-				BlackList:UpdateUI()
-				this:SetScript("OnUpdate", nil)
-			end)
 		end)
 		
 		-- Store reference to SaveReason so it can be called from outside
