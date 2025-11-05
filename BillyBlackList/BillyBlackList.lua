@@ -82,6 +82,26 @@ function BlackList:HookFunctions()
 
 end
 
+-- Helper function to format alert messages with optional reason
+local function FormatBlacklistAlert(playerName, baseMessage, action)
+	local showReasons = BlackList:GetOption("showReasons", false)
+	if showReasons then
+		local index = BlackList:GetIndexByName(playerName)
+		if index > 0 then
+			local player = BlackList:GetPlayerByIndex(index)
+			if player and player["reason"] and player["reason"] ~= "" then
+				local reason = player["reason"]
+				-- Truncate reason if too long (max 30 characters)
+				if string.len(reason) > 30 then
+					reason = string.sub(reason, 1, 27) .. "..."
+				end
+				return "BlackList: " .. playerName .. " " .. baseMessage .. " (Reason: " .. reason .. ")"
+			end
+		end
+	end
+	return "BlackList: " .. playerName .. " " .. baseMessage
+end
+
 -- Hooked ChatFrame_OnEvent function (like SuperIgnore does)
 function BlackList_ChatFrame_OnEvent(event)
 	
@@ -133,7 +153,8 @@ function BlackList_ChatFrame_OnEvent(event)
 					
 					if (not alreadywarned) then
 						table.insert(Already_Warned_For["WHISPER"], name);
-						BlackList:AddMessage("BlackList: " .. name .. " is blacklisted and whispered you.", "yellow");
+						local message = FormatBlacklistAlert(name, "whispered you. (Blocked)")
+						BlackList:AddMessage(message, "yellow");
 					end
 				end
 				-- Block the whisper completely - do NOT call original handler
@@ -152,7 +173,8 @@ function BlackList_ChatFrame_OnEvent(event)
 				
 				if (not alreadywarned) then
 					table.insert(Already_Warned_For["WHISPER"], name);
-					BlackList:AddMessage("BlackList: " .. name .. " is blacklisted and whispered you.", "yellow");
+					local message = FormatBlacklistAlert(name, "whispered you.")
+					BlackList:AddMessage(message, "yellow");
 				end
 			end
 			
@@ -226,7 +248,8 @@ end
 function BlackList_InviteByName(name)
 	if (BlackList:GetOption("preventMyInvites", true)) then
 		if (BlackList:GetIndexByName(name) > 0) then
-			BlackList:AddMessage("BlackList: " .. name .. " is blacklisted, preventing you from inviting them.", "yellow");
+			local message = FormatBlacklistAlert(name, "is blacklisted. Invite blocked.")
+			BlackList:AddMessage(message, "yellow");
 			if BlackList:GetOption("debugMode", false) then
 				DEFAULT_CHAT_FRAME:AddMessage("BlackList: [DEBUG] Blocked InviteByName for " .. name, 1, 0, 0)
 			end
@@ -251,7 +274,8 @@ function BlackList_UnitPopup_OnClick()
 		
 		if targetName and BlackList:GetOption("preventMyInvites", true) then
 			if BlackList:GetIndexByName(targetName) > 0 then
-				BlackList:AddMessage("BlackList: " .. targetName .. " is blacklisted, preventing you from inviting them.", "yellow");
+				local message = FormatBlacklistAlert(targetName, "is blacklisted. Invite blocked.")
+				BlackList:AddMessage(message, "yellow");
 				if BlackList:GetOption("debugMode", false) then
 					DEFAULT_CHAT_FRAME:AddMessage("BlackList: [DEBUG] Blocked UnitPopup invite for " .. targetName, 1, 0, 0)
 				end
@@ -416,13 +440,13 @@ function BlackList:HandleEvent(event)
 							PlaySound("RaidWarning");
 						end
 						
-						-- Display prominent multi-line warning
+						-- Format message with optional reason
+						local message = FormatBlacklistAlert(name, "")
+						
+						-- Display prominent warning
 						BlackList:AddMessage("==========================================", "yellow");
 						BlackList:AddMessage("WARNING: Blacklisted player in your party!", "yellow");
-						BlackList:AddMessage(name .. " is blacklisted!", "yellow");
-						if player["reason"] and player["reason"] ~= "" then
-							BlackList:AddMessage("Reason: " .. player["reason"], "yellow");
-						end
+						BlackList:AddMessage(message, "yellow");
 						BlackList:AddMessage("==========================================", "yellow");
 					end
 				end

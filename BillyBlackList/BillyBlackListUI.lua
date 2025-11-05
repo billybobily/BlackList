@@ -262,6 +262,11 @@ local function CreateNewOptionsFrame()
 	local debugMode, debugModeText = CreateBlackListOption(f, "BL_DebugMode", "Enable debug messages (for troubleshooting)", pad, function(checked)
 		BlackList:ToggleOption("debugMode", checked)
 	end)
+	pad = pad - 22
+	
+	local showReasons, showReasonsText = CreateBlackListOption(f, "BL_ShowReasons", "Show blacklist reason in alerts", pad, function(checked)
+		BlackList:ToggleOption("showReasons", checked)
+	end)
 	pad = pad - 32  -- Extra space before next section
 	
 	-- Communication Section
@@ -303,12 +308,13 @@ local function CreateNewOptionsFrame()
 	f.checkboxes = {
 		{checkbox = playSounds, option = "playSounds", default = true},
 		{checkbox = warnTarget, option = "warnTarget", default = true},
+		{checkbox = debugMode, option = "debugMode", default = false},  -- Off by default
+		{checkbox = showReasons, option = "showReasons", default = false},  -- Off by default
 		{checkbox = preventWhispers, option = "preventWhispers", default = true},
 		{checkbox = warnWhispers, option = "warnWhispers", default = true},
 		{checkbox = preventInvites, option = "preventInvites", default = false},  -- Off by default
 		{checkbox = preventMyInvites, option = "preventMyInvites", default = true},  -- On by default
-		{checkbox = warnPartyJoin, option = "warnPartyJoin", default = true},
-		{checkbox = debugMode, option = "debugMode", default = false}  -- Off by default
+		{checkbox = warnPartyJoin, option = "warnPartyJoin", default = true}
 	}
 	
 	return f
