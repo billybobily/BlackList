@@ -80,14 +80,37 @@ end
 -- Hooked ChatFrame_OnEvent function (like SuperIgnore does)
 function BlackList_ChatFrame_OnEvent(event)
 	
-	-- Handle whisper blocking/warning
+	-- Handle whisper blocking/warning - check BEFORE any other processing
 	if event == "CHAT_MSG_WHISPER" then
 		local name = arg2;
 		
-		if (BlackList:GetIndexByName(name) > 0) then
-			local player = BlackList:GetPlayerByIndex(BlackList:GetIndexByName(name));
+		-- Check if player is blacklisted
+		local blacklistIndex = BlackList:GetIndexByName(name)
+		if blacklistIndex > 0 then
+			local player = BlackList:GetPlayerByIndex(blacklistIndex);
 			
-			-- Always warn about whispers from blacklisted players (if enabled)
+			-- If prevent whispers is enabled, ALWAYS block (even if also on ignore list)
+			if (BlackList:GetOption("preventWhispers", true)) then
+				-- Warn if enabled
+				if (BlackList:GetOption("warnWhispers", true)) then
+					local alreadywarned = false;
+					
+					for key, warnedname in pairs(Already_Warned_For["WHISPER"]) do
+						if (name == warnedname) then
+							alreadywarned = true;
+						end
+					end
+					
+					if (not alreadywarned) then
+						table.insert(Already_Warned_For["WHISPER"], name);
+						BlackList:AddMessage("BlackList: " .. name .. " is blacklisted and whispered you.", "yellow");
+					end
+				end
+				-- Block the whisper completely - do NOT call original handler
+				return;
+			end
+			
+			-- If prevent whispers is disabled but warn is enabled, still warn
 			if (BlackList:GetOption("warnWhispers", true)) then
 				local alreadywarned = false;
 				
@@ -103,19 +126,11 @@ function BlackList_ChatFrame_OnEvent(event)
 				end
 			end
 			
-			-- Check if we should block whispers
-			if (BlackList:GetOption("preventWhispers", true)) then
-				-- Block the whisper by not calling the original handler (no auto-reply)
-				return;
-			end
-			
-			-- If not blocking, call the original handler to display the whisper
-			Orig_ChatFrame_OnEvent(event);
-			return;
+			-- Fall through to original handler (will be filtered by ignore list if also ignored)
 		end
 	end
 	
-	-- Call the original handler for non-blacklisted messages
+	-- Call the original handler for all non-blocked messages
 	Orig_ChatFrame_OnEvent(event);
 end
 
