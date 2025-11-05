@@ -600,51 +600,31 @@
 					</BackgroundInsets>
 				</Backdrop>
 				<Frames>
-					<ScrollFrame name="BlackListDetailsFrameScrollFrame" inherits="UIPanelScrollFrameTemplate">
+					<EditBox name="BlackListDetailsFrameReasonTextBox" letters="500" multiLine="true" autoFocus="false">
 						<Size>
-							<AbsDimension x="233" y="81" />
+							<AbsDimension x="233" y="40" />
 						</Size>
 						<Anchors>
 							<Anchor point="TOPLEFT">
 								<Offset>
-									<AbsDimension x="5" y="-7" />
+									<AbsDimension x="9" y="-11" />
 								</Offset>
 							</Anchor>
 						</Anchors>
 						<Scripts>
-							<OnMouseDown>
-								BlackListDetailsFrameReasonTextBox:SetFocus();
-							</OnMouseDown>
-							<OnMouseUp>
-								BlackListDetailsFrameReasonTextBox:SetFocus();
-							</OnMouseUp> 
+							<OnEscapePressed>
+								this:ClearFocus();
+							</OnEscapePressed>
+							<OnEditFocusLost>
+								BlackList:UpdateDetails(BlackList:GetSelectedBlackList(), nil, nil, this:GetText());
+							</OnEditFocusLost>
+							<OnTextChanged>
+								-- Update on text change but also save on focus lost
+								BlackList:UpdateDetails(BlackList:GetSelectedBlackList(), nil, nil, this:GetText());
+							</OnTextChanged>
 						</Scripts>
-						<ScrollChild>
-							<EditBox name="BlackListDetailsFrameReasonTextBox" letters="500" multiLine="true" autoFocus="false">
-								<Size>
-									<AbsDimension x="230" y="81" />
-								</Size>
-								<Scripts>
-									<OnEscapePressed>
-										this:ClearFocus();
-									</OnEscapePressed>
-									<OnTextChanged>
-										local scrollBar = getglobal(this:GetParent():GetName().."ScrollBar");
-										this:GetParent():UpdateScrollChildRect();
-										local min;
-										local max;
-										min, max = scrollBar:GetMinMaxValues();
-										if ( max > 0 and (this.max ~= max) ) then
-											this.max = max;
-											scrollBar:SetValue(max);
-										end
-										BlackList:UpdateDetails(BlackList:GetSelectedBlackList(), nil, nil, this:GetText());
-									</OnTextChanged>
-								</Scripts>
-								<FontString inherits="GameFontHighlight" />
-							</EditBox>
-						</ScrollChild>
-					</ScrollFrame>
+						<FontString inherits="GameFontHighlight" />
+					</EditBox>
 				</Frames>
 				<Scripts>
 					<OnLoad>

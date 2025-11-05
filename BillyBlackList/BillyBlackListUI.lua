@@ -964,10 +964,11 @@ function BlackList:ShowStandaloneDetails()
 		reasonLabel:SetPoint("TOPLEFT", expiryDateText, "BOTTOMLEFT", 0, -10)
 		reasonLabel:SetText("Reason:")
 		
-		-- Reason text box (scrollable multiline)
-		local reasonBox = CreateFrame("ScrollFrame", "BlackListStandaloneDetails_ReasonScroll", detailsFrame, "UIPanelScrollFrameTemplate")
-		reasonBox:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -10)
-		reasonBox:SetPoint("BOTTOMRIGHT", detailsFrame, "BOTTOMRIGHT", -30, 15)
+		-- Reason text box (simple multiline, no scroll, 2-3 lines max)
+		local reasonBox = CreateFrame("Frame", "BlackListStandaloneDetails_ReasonBox", detailsFrame)
+		reasonBox:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -5)
+		reasonBox:SetPoint("RIGHT", detailsFrame, "RIGHT", -15, 0)
+		reasonBox:SetHeight(45)
 		
 		-- Backdrop for reason box
 		reasonBox:SetBackdrop({
@@ -979,13 +980,12 @@ function BlackList:ShowStandaloneDetails()
 		reasonBox:SetBackdropColor(0, 0, 0, 0.5)
 		
 		local reasonText = CreateFrame("EditBox", "BlackListStandaloneDetails_ReasonText", reasonBox)
-		reasonText:SetWidth(240)
-		reasonText:SetHeight(100)
+		reasonText:SetPoint("TOPLEFT", 5, -5)
+		reasonText:SetPoint("BOTTOMRIGHT", -5, 5)
 		reasonText:SetMultiLine(true)
+		reasonText:SetMaxLetters(150)
 		reasonText:SetAutoFocus(false)
 		reasonText:SetFontObject(GameFontHighlight)
-		reasonText:SetTextInsets(5, 5, 5, 5)
-		reasonBox:SetScrollChild(reasonText)
 		
 		-- Function to save reason
 		local function SaveReason()
