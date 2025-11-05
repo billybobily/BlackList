@@ -123,6 +123,8 @@ function BlackList:UpdateDetails(index, reason)
 	end
 	if (reason ~= nil) then
 		player["reason"] = reason;
+		-- Refresh the main window list to show updated reason
+		self:UpdateUI();
 	end
 
 	table.remove(BlackListedPlayers[GetRealmName()], index);
