@@ -683,6 +683,41 @@ function BlackList:CreateStandaloneWindow()
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Standalone window created", 0, 1, 0)
 end
 
+-- Update a specific row in the standalone list (for live updates without full refresh)
+function BlackList:UpdateStandaloneListRow(playerIndex)
+	local scrollFrame = getglobal("BlackListStandaloneScrollFrame")
+	if not scrollFrame then return end
+	
+	local offset = FauxScrollFrame_GetOffset(scrollFrame)
+	
+	-- Find which button shows this player index
+	for i = 1, 19 do
+		local button = getglobal("BlackListStandaloneButton"..i)
+		if button and button:GetID() == playerIndex then
+			local nameText = getglobal("BlackListStandaloneButton"..i.."Name")
+			if nameText then
+				local player = self:GetPlayerByIndex(playerIndex)
+				if player then
+					local displayText = player["name"]
+					
+					-- Add reason in brackets if it exists
+					if player["reason"] and player["reason"] ~= "" then
+						local reason = player["reason"]
+						-- Truncate reason if too long (max 30 characters)
+						if string.len(reason) > 30 then
+							reason = string.sub(reason, 1, 27) .. "..."
+						end
+						displayText = player["name"] .. " |cFFFFFFFF[" .. reason .. "]|r"
+					end
+					
+					nameText:SetText(displayText)
+				end
+			end
+			break
+		end
+	end
+end
+
 function BlackList:ToggleStandaloneWindow()
 	local frame = getglobal("BlackListStandaloneFrame")
 	if frame then
@@ -813,15 +848,13 @@ function BlackList:ShowStandaloneDetails()
 			detailsFrame.pfuiStyled = true
 		end
 		
-		-- OnShow handler to close options window and refresh main list
+		-- OnShow handler to close options window
 		detailsFrame:SetScript("OnShow", function()
 			-- Close options when details is opened
 			local optionsFrame = getglobal("BlackListOptionsFrame_New")
 			if optionsFrame and optionsFrame:IsVisible() then
 				optionsFrame:Hide()
 			end
-			-- Refresh main window to show any saved changes
-			BlackList:UpdateUI()
 		end)
 		
 		-- Title
@@ -1007,6 +1040,8 @@ function BlackList:ShowStandaloneDetails()
 						if BlackList:GetOption("debugMode", false) then
 							DEFAULT_CHAT_FRAME:AddMessage("BlackList: Reason saved for " .. player["name"], 0, 1, 0)
 						end
+						-- Update just the specific row in the standalone list
+						BlackList:UpdateStandaloneListRow(index)
 					end
 				end
 			end
