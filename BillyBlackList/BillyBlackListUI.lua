@@ -463,8 +463,9 @@ function BlackList:SetupDetailsClickHandler()
 	
 	-- Hide handler when clicking outside
 	clickHandler:SetScript("OnMouseDown", function()
-		if reasonText:HasFocus() then
-			reasonText:ClearFocus()
+		local textBox = getglobal("BlackListDetailsFrameReasonTextBox")
+		if textBox and textBox:HasFocus() then
+			textBox:ClearFocus()
 		end
 		this:Hide()
 	end)
@@ -1070,7 +1071,7 @@ function BlackList:ShowStandaloneDetails()
 		
 		-- Hide handler and save when clicking outside
 		clickHandler:SetScript("OnMouseDown", function()
-			if reasonText:HasFocus() then
+			if reasonText and reasonText:HasFocus() then
 				reasonText:ClearFocus()
 			end
 			this:Hide()
