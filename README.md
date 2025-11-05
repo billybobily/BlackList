@@ -41,6 +41,14 @@ You can also manage your blacklist through the interface:
 
 When you have someone targeted, BlackList will automatically fill in their details like level, class, and race. You can edit this information later in the details window.
 
+**Temporary Blacklisting:**
+
+BlackList supports automatic expiry for temporary blacklists:
+- When viewing a player's details, use the "Duration" dropdown to set how long they should remain blacklisted
+- Choose from: Forever (permanent), 1 Week, 2 Weeks, 3 Weeks, or 4 Weeks
+- The expiry date is shown in the details window (e.g., "Expires: Never" or "Expires: 02:30PM on Nov 11, 2025")
+- Use this if you're feeling generous and want the person to have a second chance
+
 ## Options and features
 
 Click the "Options" button in the BlackList tab to access detailed settings:
