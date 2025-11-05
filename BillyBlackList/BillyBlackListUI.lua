@@ -257,7 +257,12 @@ local function CreateNewOptionsFrame()
 	local warnTarget, warnTargetText = CreateBlackListOption(f, "BL_WarnTarget", "Warn when targeting blacklisted players", pad, function(checked)
 		BlackList:ToggleOption("warnTarget", checked)
 	end)
-	pad = pad - 32  -- Extra space for longer text
+	pad = pad - 22
+	
+	local debugMode, debugModeText = CreateBlackListOption(f, "BL_DebugMode", "Enable debug messages (for troubleshooting)", pad, function(checked)
+		BlackList:ToggleOption("debugMode", checked)
+	end)
+	pad = pad - 32  -- Extra space before next section
 	
 	-- Communication Section
 	CreateBlackListHeader(f, "Communication", 11, pad)
@@ -302,7 +307,8 @@ local function CreateNewOptionsFrame()
 		{checkbox = warnWhispers, option = "warnWhispers", default = true},
 		{checkbox = preventInvites, option = "preventInvites", default = false},  -- Off by default
 		{checkbox = preventMyInvites, option = "preventMyInvites", default = true},  -- On by default
-		{checkbox = warnPartyJoin, option = "warnPartyJoin", default = true}
+		{checkbox = warnPartyJoin, option = "warnPartyJoin", default = true},
+		{checkbox = debugMode, option = "debugMode", default = false}  -- Off by default
 	}
 	
 	return f

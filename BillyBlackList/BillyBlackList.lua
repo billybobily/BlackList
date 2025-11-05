@@ -79,9 +79,6 @@ function BlackList:HookFunctions()
 	UnitPopup_OnClick = BlackList_UnitPopup_OnClick;
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Hooks installed", 0, 1, 0);
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: InviteByName hook = " .. tostring(InviteByName == BlackList_InviteByName), 0, 1, 0);
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Orig_InviteByName = " .. tostring(Orig_InviteByName ~= nil), 0, 1, 0);
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: UnitPopup_OnClick hook = " .. tostring(UnitPopup_OnClick == BlackList_UnitPopup_OnClick), 0, 1, 0);
 
 end
 
@@ -227,23 +224,17 @@ end
 
 -- Hooked InviteByName function
 function BlackList_InviteByName(name)
-	-- Debug: Always log when this function is called
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: InviteByName called for: " .. tostring(name), 0, 1, 1)
-	
 	if (BlackList:GetOption("preventMyInvites", true)) then
-		DEFAULT_CHAT_FRAME:AddMessage("BlackList: preventMyInvites is ENABLED", 0, 1, 1)
 		if (BlackList:GetIndexByName(name) > 0) then
 			BlackList:AddMessage("BlackList: " .. name .. " is blacklisted, preventing you from inviting them.", "yellow");
-			DEFAULT_CHAT_FRAME:AddMessage("BlackList: BLOCKING invite to " .. name, 1, 0, 0)
+			if BlackList:GetOption("debugMode", false) then
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: [DEBUG] Blocked InviteByName for " .. name, 1, 0, 0)
+			end
 			return;
 		end
-	else
-		DEFAULT_CHAT_FRAME:AddMessage("BlackList: preventMyInvites is DISABLED", 0, 1, 1)
 	end
 
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Allowing invite to " .. name, 0, 1, 0)
 	Orig_InviteByName(name);
-
 end
 
 -- Hooked UnitPopup_OnClick function (for right-click portrait invites)
@@ -254,17 +245,16 @@ function BlackList_UnitPopup_OnClick()
 	local unit = dropdownFrame.unit;
 	local name = dropdownFrame.name;
 	
-	DEFAULT_CHAT_FRAME:AddMessage("BlackList: UnitPopup_OnClick - button: " .. tostring(button) .. ", unit: " .. tostring(unit) .. ", name: " .. tostring(name), 1, 1, 0)
-	
 	-- Check if this is an invite action (INVITE, PARTY_INVITE, or RAID_INVITE)
 	if button == "INVITE" or button == "PARTY_INVITE" or button == "RAID_INVITE" then
 		local targetName = name or (unit and UnitName(unit))
-		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Invite attempt for: " .. tostring(targetName), 1, 1, 0)
 		
 		if targetName and BlackList:GetOption("preventMyInvites", true) then
 			if BlackList:GetIndexByName(targetName) > 0 then
 				BlackList:AddMessage("BlackList: " .. targetName .. " is blacklisted, preventing you from inviting them.", "yellow");
-				DEFAULT_CHAT_FRAME:AddMessage("BlackList: BLOCKING UnitPopup invite to " .. targetName, 1, 0, 0)
+				if BlackList:GetOption("debugMode", false) then
+					DEFAULT_CHAT_FRAME:AddMessage("BlackList: [DEBUG] Blocked UnitPopup invite for " .. targetName, 1, 0, 0)
+				end
 				-- Close the dropdown but don't call the original function
 				CloseDropDownMenus();
 				return;
