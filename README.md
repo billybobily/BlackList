@@ -66,23 +66,11 @@ Click the "Options" button in the BlackList tab to access detailed settings:
 - Prevent yourself from accidentally inviting blacklisted players
 - Warn when blacklisted players join your party or raid
 
-## Why use BlackList?
-
-For players on your faction, you might blacklist ninja looters, people who leave groups without warning, scammers, or just players you don't want to group with again. For opposite faction players, you might track gankers, campers, or griefers who target you repeatedly.
-
-BlackList is better than the built-in Ignore system because it has no limit on how many players you can add, lets you store detailed information about why you blacklisted someone, and gives you flexible control over how warnings and blocking work.
-
 ## pfUI Integration
 
 BlackList now automatically integrates with pfUI when that addon is active! If you're using pfUI to enhance your Classic WoW interface, BlackList will detect it and style all its frames (options menu, details window, etc.) to match pfUI's modern look and feel.
 
 When pfUI is not present, BlackList falls back to standard Classic WoW styling, so it works perfectly either way.
-
-## Installation
-
-The addon saves all your data between game sessions and keeps separate lists for each character and realm. It's lightweight and won't interfere with other addons.
-
-BlackList has been updated and enhanced for the Turtle WoW community with modern options and improved functionality while maintaining compatibility with Classic WoW.
 
 ## Credits
 
