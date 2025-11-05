@@ -126,13 +126,17 @@ local function DelayedStyleTabs()
 		if IsPfUIActive() and (FriendFrameToggleTab3 or IgnoreFrameToggleTab3 or BlackListFrameToggleTab3) then
 			StyleBlackListFrames()
 			this:SetScript("OnUpdate", nil) -- Stop trying once successful
-			DEFAULT_CHAT_FRAME:AddMessage("BlackList: pfUI integration complete")
+			if BlackList:GetOption("debugMode", false) then
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: pfUI integration complete")
+			end
 		elseif attempts >= maxAttempts then
 			this:SetScript("OnUpdate", nil) -- Give up after max attempts
-			if not IsPfUIActive() then
-				DEFAULT_CHAT_FRAME:AddMessage("BlackList: pfUI not detected, using standard styling")
-			else
-				DEFAULT_CHAT_FRAME:AddMessage("BlackList: Could not find tabs to style")
+			if BlackList:GetOption("debugMode", false) then
+				if not IsPfUIActive() then
+					DEFAULT_CHAT_FRAME:AddMessage("BlackList: pfUI not detected, using standard styling")
+				else
+					DEFAULT_CHAT_FRAME:AddMessage("BlackList: Could not find tabs to style")
+				end
 			end
 		end
 	end)
@@ -496,7 +500,9 @@ function BlackList:CreateStandaloneWindow()
 	frame:SetScript("OnShow", function()
 		if IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
 			if not this.pfuiStyled then
-				DEFAULT_CHAT_FRAME:AddMessage("BlackList: Applying pfUI styling to main window", 0, 1, 0)
+				if BlackList:GetOption("debugMode", false) then
+					DEFAULT_CHAT_FRAME:AddMessage("BlackList: Applying pfUI styling to main window", 0, 1, 0)
+				end
 				pfUI.api.CreateBackdrop(this, nil, true)
 				this.pfuiStyled = true
 			end
