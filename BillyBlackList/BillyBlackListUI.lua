@@ -1154,6 +1154,12 @@ end
 
 function BlackList:ShowDetails()
 
+	-- Close options window if open
+	local optionsFrame = getglobal("BlackListStandaloneOptionsFrame")
+	if optionsFrame and optionsFrame:IsVisible() then
+		optionsFrame:Hide()
+	end
+
 	-- get player
 	local player = self:GetPlayerByIndex(self:GetSelectedBlackList());
 
