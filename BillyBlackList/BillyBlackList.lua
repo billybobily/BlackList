@@ -256,8 +256,8 @@ function BlackList_UnitPopup_OnClick()
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: UnitPopup_OnClick - button: " .. tostring(button) .. ", unit: " .. tostring(unit) .. ", name: " .. tostring(name), 1, 1, 0)
 	
-	-- Check if this is a party invite action
-	if button == "PARTY_INVITE" or button == "RAID_INVITE" then
+	-- Check if this is an invite action (INVITE, PARTY_INVITE, or RAID_INVITE)
+	if button == "INVITE" or button == "PARTY_INVITE" or button == "RAID_INVITE" then
 		local targetName = name or (unit and UnitName(unit))
 		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Invite attempt for: " .. tostring(targetName), 1, 1, 0)
 		
