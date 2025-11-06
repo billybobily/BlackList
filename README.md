@@ -31,6 +31,9 @@ Remove players from your blacklist:
 Check your current group:
 - `/blcheck` - Scan your party or raid for blacklisted players
 
+Show blacklist information:
+- `/blinfo` - Display information about your blacklist and realm-sharing status
+
 **Using the UI:**
 
 You can also manage your blacklist through the interface:
@@ -48,6 +51,16 @@ BlackList supports automatic expiry for temporary blacklists:
 - Choose from: Forever (permanent), 1 Week, 2 Weeks, 3 Weeks, or 4 Weeks
 - The expiry date is shown in the details window (e.g., "Expires: Never" or "Expires: 02:30PM on Nov 11, 2025")
 - Use this if you're feeling generous and want the person to have a second chance
+
+**Realm-Wide Blacklist:**
+
+Billy's BlackList automatically shares your blacklist across **all characters on the same realm**:
+- When you add a player to the blacklist on one character, they appear in the blacklist for all your other characters on that realm
+- Each realm maintains its own separate blacklist (your characters on different realms have different lists)
+- This works just like pfUI and other modern addons - no configuration needed!
+- Use `/blinfo` to see how many players are blacklisted on your current realm
+
+This means you only need to maintain one blacklist per realm, making it much easier to manage across multiple alts!
 
 ## Options and features
 

@@ -314,7 +314,30 @@ function BlackList:RegisterSlashCmds()
 								BlackList:CheckGroup()
 							end;
 	SLASH_CheckBlackList1 = "/blcheck";
+	
+	SlashCmdList["BlackListInfo"]   = function(args)
+								BlackList:ShowInfo()
+							end;
+	SLASH_BlackListInfo1 = "/blinfo";
 
+end
+
+-- Show blacklist information
+function BlackList:ShowInfo()
+	local realm = GetRealmName()
+	local numPlayers = self:GetNumBlackLists()
+	local charName = UnitName("player")
+	
+	DEFAULT_CHAT_FRAME:AddMessage("==========================================", 0, 1, 0)
+	DEFAULT_CHAT_FRAME:AddMessage("BillyBlackList Information", 0, 1, 0)
+	DEFAULT_CHAT_FRAME:AddMessage("==========================================", 0, 1, 0)
+	DEFAULT_CHAT_FRAME:AddMessage("Character: |cFFFFFF00" .. charName .. "|r", 1, 1, 1)
+	DEFAULT_CHAT_FRAME:AddMessage("Realm: |cFFFFFF00" .. realm .. "|r", 1, 1, 1)
+	DEFAULT_CHAT_FRAME:AddMessage("Blacklisted Players: |cFFFFFF00" .. numPlayers .. "|r", 1, 1, 1)
+	DEFAULT_CHAT_FRAME:AddMessage("Sharing Mode: |cFF00FF00Realm-Wide (All Characters)|r", 1, 1, 1)
+	DEFAULT_CHAT_FRAME:AddMessage("==========================================", 0, 1, 0)
+	DEFAULT_CHAT_FRAME:AddMessage("All characters on '" .. realm .. "' share this blacklist!", 0.5, 0.5, 1)
+	DEFAULT_CHAT_FRAME:AddMessage("Use /blinfo to view this information again.", 0.7, 0.7, 0.7)
 end
 
 -- Handles the slash cmds
@@ -349,12 +372,79 @@ end
 function BlackList:HandleEvent(event)
 
 	if (event == "VARIABLES_LOADED") then
-		if (not BlackListedPlayers[GetRealmName()]) then
-			BlackListedPlayers[GetRealmName()] = {};
+		local realm = GetRealmName()
+		local charName = UnitName("player")
+		
+		-- Initialize realm table if it doesn't exist
+		if (not BlackListedPlayers[realm]) then
+			BlackListedPlayers[realm] = {};
 		end
+		
+		-- Migration: Merge per-character data if it exists (from experimental versions)
+		-- This handles the case where characters might have had separate blacklists
+		if BlackListedPlayers[realm].characters then
+			local realmList = BlackListedPlayers[realm]
+			
+			-- Create a lookup table for existing realm-wide players with their timestamps
+			local existingPlayers = {}
+			for i = 1, table.getn(realmList) do
+				if type(realmList[i]) == "table" and realmList[i]["name"] then
+					existingPlayers[realmList[i]["name"]] = {
+						index = i,
+						added = realmList[i]["added"] or 0
+					}
+				end
+			end
+			
+			-- Merge all character-specific data
+			local totalMerged = 0
+			for charName, charList in pairs(BlackListedPlayers[realm].characters) do
+				if type(charList) == "table" then
+					for i = 1, table.getn(charList) do
+						local player = charList[i]
+						if type(player) == "table" and player["name"] then
+							local existing = existingPlayers[player["name"]]
+							local playerAdded = player["added"] or 0
+							
+							if not existing then
+								-- New player, add to realm list
+								table.insert(realmList, player)
+								existingPlayers[player["name"]] = {
+									index = table.getn(realmList),
+									added = playerAdded
+								}
+								totalMerged = totalMerged + 1
+							elseif playerAdded > existing.added then
+								-- Player exists but this entry is newer, replace it
+								realmList[existing.index] = player
+								existingPlayers[player["name"]].added = playerAdded
+								totalMerged = totalMerged + 1
+							end
+							-- If existing entry is newer or same age, keep it (do nothing)
+						end
+					end
+				end
+			end
+			
+			-- Clean up old character-specific data structure
+			BlackListedPlayers[realm].characters = nil
+			
+			if totalMerged > 0 then
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: Merged " .. totalMerged .. " player(s) from character-specific lists", 1, 1, 0);
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: Kept most recent entries for duplicates", 0.7, 0.7, 0.7);
+			end
+		end
+		
+		-- Initialize options
 		if (not BlackListOptions) then
 			BlackListOptions = {};
 		end
+		
+		-- Display load message with realm info
+		local numBlacklisted = table.getn(BlackListedPlayers[realm])
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Loaded " .. numBlacklisted .. " blacklisted player(s) for realm '" .. realm .. "'", 0, 1, 0);
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: All characters on this realm share the same blacklist", 0.5, 0.5, 1);
+		
 		-- Remove expired entries on load
 		self:RemoveExpired()
 	elseif (event == "PLAYER_TARGET_CHANGED") then

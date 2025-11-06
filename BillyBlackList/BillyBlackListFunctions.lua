@@ -6,7 +6,27 @@
     - Lua 5.0: Use table.getn() not #, getglobal() not _G[]
     - Time functions: time() for timestamps, date() for formatting
     - Expiry system: nil = forever, number = unix timestamp
+    
+    STORAGE STRUCTURE:
+    BlackListedPlayers[realm] = {player1, player2, ...}
+    - All characters on the same realm share the same blacklist
+    - Data is saved per-realm in SavedVariables
 --]]
+
+-- Get the active blacklist (always realm-wide, shared across all characters)
+function BlackList:GetActiveList()
+	local realm = GetRealmName()
+	
+	-- Initialize realm table if it doesn't exist
+	if not BlackListedPlayers[realm] then
+		BlackListedPlayers[realm] = {}
+	end
+	
+	-- Return the realm-wide list (shared across all characters)
+	return BlackListedPlayers[realm]
+end
+
+function BlackList:AddPlayer(player, reason)
 
 function BlackList:AddPlayer(player, reason)
 
@@ -56,7 +76,7 @@ function BlackList:AddPlayer(player, reason)
 	end
 	
 	player = {["name"] = name, ["reason"] = reason, ["added"] = added, ["level"] = level, ["class"] = class, ["race"] = race, ["expiry"] = nil};
-	table.insert(BlackListedPlayers[GetRealmName()], player);
+	table.insert(self:GetActiveList(), player);
 
 	self:AddMessage(name .. " " .. ADDED_TO_BLACKLIST, "yellow");
 	
@@ -93,7 +113,7 @@ function BlackList:RemovePlayer(player)
 
 	name = self:GetNameByIndex(index);
 
-	table.remove(BlackListedPlayers[GetRealmName()], index);
+	table.remove(self:GetActiveList(), index);
 
 	self:AddMessage(name .. " " .. REMOVED_FROM_BLACKLIST, "yellow");
 
@@ -125,15 +145,15 @@ function BlackList:UpdateDetails(index, reason)
 		player["reason"] = reason;
 	end
 
-	table.remove(BlackListedPlayers[GetRealmName()], index);
-	table.insert(BlackListedPlayers[GetRealmName()], index, player);
+	table.remove(self:GetActiveList(), index);
+	table.insert(self:GetActiveList(), index, player);
 
 end
 
 -- Returns the number of blacklisted players
 function BlackList:GetNumBlackLists()
 
-	return table.getn(BlackListedPlayers[GetRealmName()]);
+	return table.getn(self:GetActiveList());
 
 end
 
@@ -157,7 +177,7 @@ function BlackList:GetNameByIndex(index)
 		return nil;
 	end
 
-	player = BlackListedPlayers[GetRealmName()][index];
+	player = self:GetActiveList()[index];
 	return player["name"];
 
 end
@@ -169,7 +189,7 @@ function BlackList:GetPlayerByIndex(index)
 		return nil
 	end
 
-	player = BlackListedPlayers[GetRealmName()][index];
+	player = self:GetActiveList()[index];
 	return player;
 
 end
@@ -416,7 +436,7 @@ function BlackList:RemoveExpired()
 		local player = self:GetPlayerByIndex(i)
 		if player and player["expiry"] and player["expiry"] <= now then
 			table.insert(removed, player["name"])
-			table.remove(BlackListedPlayers[GetRealmName()], i)
+			table.remove(self:GetActiveList(), i)
 		end
 	end
 	
