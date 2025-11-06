@@ -28,8 +28,6 @@ end
 
 function BlackList:AddPlayer(player, reason)
 
-function BlackList:AddPlayer(player, reason)
-
 	-- handle player
 	if (player == "" or player == nil) then
 		return;
