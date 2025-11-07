@@ -31,9 +31,6 @@ Remove players from your blacklist:
 Check your current group:
 - `/blcheck` - Scan your party or raid for blacklisted players
 
-Show blacklist information:
-- `/blinfo` - Display information about your blacklist and realm-sharing status
-
 **Using the UI:**
 
 You can also manage your blacklist through the interface:
@@ -58,7 +55,6 @@ Billy's BlackList automatically shares your blacklist across **all characters on
 - When you add a player to the blacklist on one character, they appear in the blacklist for all your other characters on that realm
 - Each realm maintains its own separate blacklist (your characters on different realms have different lists)
 - This works just like pfUI and other modern addons - no configuration needed!
-- Use `/blinfo` to see how many players are blacklisted on your current realm
 
 This means you only need to maintain one blacklist per realm, making it much easier to manage across multiple alts!
 

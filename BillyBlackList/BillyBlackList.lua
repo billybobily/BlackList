@@ -314,30 +314,7 @@ function BlackList:RegisterSlashCmds()
 								BlackList:CheckGroup()
 							end;
 	SLASH_CheckBlackList1 = "/blcheck";
-	
-	SlashCmdList["BlackListInfo"]   = function(args)
-								BlackList:ShowInfo()
-							end;
-	SLASH_BlackListInfo1 = "/blinfo";
 
-end
-
--- Show blacklist information
-function BlackList:ShowInfo()
-	local realm = GetRealmName()
-	local numPlayers = self:GetNumBlackLists()
-	local charName = UnitName("player")
-	
-	DEFAULT_CHAT_FRAME:AddMessage("==========================================", 0, 1, 0)
-	DEFAULT_CHAT_FRAME:AddMessage("BillyBlackList Information", 0, 1, 0)
-	DEFAULT_CHAT_FRAME:AddMessage("==========================================", 0, 1, 0)
-	DEFAULT_CHAT_FRAME:AddMessage("Character: |cFFFFFF00" .. charName .. "|r", 1, 1, 1)
-	DEFAULT_CHAT_FRAME:AddMessage("Realm: |cFFFFFF00" .. realm .. "|r", 1, 1, 1)
-	DEFAULT_CHAT_FRAME:AddMessage("Blacklisted Players: |cFFFFFF00" .. numPlayers .. "|r", 1, 1, 1)
-	DEFAULT_CHAT_FRAME:AddMessage("Sharing Mode: |cFF00FF00Realm-Wide (All Characters)|r", 1, 1, 1)
-	DEFAULT_CHAT_FRAME:AddMessage("==========================================", 0, 1, 0)
-	DEFAULT_CHAT_FRAME:AddMessage("All characters on '" .. realm .. "' share this blacklist!", 0.5, 0.5, 1)
-	DEFAULT_CHAT_FRAME:AddMessage("Use /blinfo to view this information again.", 0.7, 0.7, 0.7)
 end
 
 -- Handles the slash cmds
