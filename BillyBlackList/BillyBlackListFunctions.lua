@@ -496,11 +496,18 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 	end
 	
 	local imported = {}
-	local lines = {}
 	
-	-- Split by newlines
-	for line in string.gfind(encodedString, "[^\n]+") do
-		table.insert(lines, line)
+	-- Replace actual newlines with a placeholder first, then split by unescaped newlines
+	-- This handles the case where the EditBox interprets newlines
+	local normalizedString = string.gsub(encodedString, "\r\n", "\n")  -- Normalize line endings
+	normalizedString = string.gsub(normalizedString, "\r", "\n")
+	
+	-- Split by newlines to get individual entries
+	local lines = {}
+	for line in string.gfind(normalizedString, "[^\n]+") do
+		if line ~= "" then
+			table.insert(lines, line)
+		end
 	end
 	
 	-- Parse each line
