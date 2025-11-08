@@ -456,37 +456,72 @@ local b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
 
 -- Base64 encode function
 function base64_encode(data)
-	local result = data:gsub('.', function(x) 
-		local r,b='',string.byte(x)
-		for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
-		return r;
-	end)
-	result = result..'0000'
-	result = result:gsub('%d%d%d?%d?%d?%d?', function(x)
-		if (string.len(x) < 6) then return '' end
-		local c=0
-		for i=1,6 do c=c+(string.sub(x,i,i)=='1' and 2^(6-i) or 0) end
-		return string.sub(b64chars,c+1,c+1)
-	end)
-	local padding = ({ '', '==', '=' })[string.len(data)%3+1]
-	return result..padding
+	local result = ""
+	local i = 1
+	while i <= string.len(data) do
+		local a = string.byte(data, i)
+		local b = string.byte(data, i+1)
+		local c = string.byte(data, i+2)
+		
+		local n = a * 65536 + (b or 0) * 256 + (c or 0)
+		local n1 = math.floor(n / 262144)
+		local n2 = math.floor((n - n1 * 262144) / 4096)
+		local n3 = math.floor((n - n1 * 262144 - n2 * 4096) / 64)
+		local n4 = n - n1 * 262144 - n2 * 4096 - n3 * 64
+		
+		result = result .. string.sub(b64chars, n1+1, n1+1) .. string.sub(b64chars, n2+1, n2+1)
+		
+		if i+1 <= string.len(data) then
+			result = result .. string.sub(b64chars, n3+1, n3+1)
+		else
+			result = result .. "="
+		end
+		
+		if i+2 <= string.len(data) then
+			result = result .. string.sub(b64chars, n4+1, n4+1)
+		else
+			result = result .. "="
+		end
+		
+		i = i + 3
+	end
+	
+	return result
 end
 
 -- Base64 decode function
 function base64_decode(data)
-	data = string.gsub(data, '[^'..b64chars..'=]', '')
-	local result = data:gsub('.', function(x)
-		if (x == '=') then return '' end
-		local r,f='',(string.find(b64chars,x)-1)
-		for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
-		return r;
-	end)
-	result = result:gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
-		if (string.len(x) ~= 8) then return '' end
-		local c=0
-		for i=1,8 do c=c+(string.sub(x,i,i)=='1' and 2^(8-i) or 0) end
-		return string.char(c)
-	end)
+	data = string.gsub(data, "[^" .. b64chars .. "=]", "")
+	local result = ""
+	local i = 1
+	
+	while i <= string.len(data) do
+		local c1 = string.sub(data, i, i)
+		local c2 = string.sub(data, i+1, i+1)
+		local c3 = string.sub(data, i+2, i+2)
+		local c4 = string.sub(data, i+3, i+3)
+		
+		local n1 = string.find(b64chars, c1) - 1
+		local n2 = string.find(b64chars, c2) - 1
+		local n3 = (c3 == "=") and 0 or (string.find(b64chars, c3) - 1)
+		local n4 = (c4 == "=") and 0 or (string.find(b64chars, c4) - 1)
+		
+		local n = n1 * 262144 + n2 * 4096 + n3 * 64 + n4
+		local b1 = math.floor(n / 65536)
+		local b2 = math.floor((n - b1 * 65536) / 256)
+		local b3 = n - b1 * 65536 - b2 * 256
+		
+		result = result .. string.char(b1)
+		if c3 ~= "=" then
+			result = result .. string.char(b2)
+		end
+		if c4 ~= "=" then
+			result = result .. string.char(b3)
+		end
+		
+		i = i + 4
+	end
+	
 	return result
 end
 
