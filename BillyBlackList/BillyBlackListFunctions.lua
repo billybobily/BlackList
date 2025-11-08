@@ -525,6 +525,32 @@ function base64_decode(data)
 	return result
 end
 
+-- Helper function to escape special characters for export
+local function EscapeForExport(str)
+	if not str or str == "" then
+		return ""
+	end
+	-- Replace newlines and pipes with escape sequences
+	str = string.gsub(str, "\\", "\\\\")  -- Escape backslashes first
+	str = string.gsub(str, "\n", "\\n")   -- Escape newlines
+	str = string.gsub(str, "\r", "\\r")   -- Escape carriage returns
+	str = string.gsub(str, "|", "\\p")    -- Escape pipes
+	return str
+end
+
+-- Helper function to unescape special characters for import
+local function UnescapeForImport(str)
+	if not str or str == "" then
+		return ""
+	end
+	-- Replace escape sequences back to actual characters
+	str = string.gsub(str, "\\p", "|")    -- Unescape pipes
+	str = string.gsub(str, "\\r", "\r")   -- Unescape carriage returns
+	str = string.gsub(str, "\\n", "\n")   -- Unescape newlines
+	str = string.gsub(str, "\\\\", "\\")  -- Unescape backslashes last
+	return str
+end
+
 -- Encode blacklist to shareable string
 function BlackList:EncodeBlacklist()
 	local list = self:GetActiveList()
@@ -539,12 +565,13 @@ function BlackList:EncodeBlacklist()
 				expiryStr = tostring(player["expiry"])
 			end
 			
-			local entry = player["name"] .. "|" ..
-			              (player["reason"] or "") .. "|" ..
+			-- Escape special characters in text fields
+			local entry = EscapeForExport(player["name"]) .. "|" ..
+			              EscapeForExport(player["reason"] or "") .. "|" ..
 			              (player["added"] or 0) .. "|" ..
-			              (player["level"] or "") .. "|" ..
-			              (player["class"] or "") .. "|" ..
-			              (player["race"] or "") .. "|" ..
+			              EscapeForExport(player["level"] or "") .. "|" ..
+			              EscapeForExport(player["class"] or "") .. "|" ..
+			              EscapeForExport(player["race"] or "") .. "|" ..
 			              expiryStr
 			table.insert(encoded, entry)
 		end
@@ -610,13 +637,14 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 				expiryTime = tonumber(parts[7])
 			end
 			
+			-- Unescape special characters in text fields
 			local player = {
-				["name"] = parts[1],
-				["reason"] = parts[2] or "",
+				["name"] = UnescapeForImport(parts[1]),
+				["reason"] = UnescapeForImport(parts[2] or ""),
 				["added"] = addedTime,
-				["level"] = parts[4] or "",
-				["class"] = parts[5] or "",
-				["race"] = parts[6] or "",
+				["level"] = UnescapeForImport(parts[4] or ""),
+				["class"] = UnescapeForImport(parts[5] or ""),
+				["race"] = UnescapeForImport(parts[6] or ""),
 				["expiry"] = expiryTime
 			}
 			
