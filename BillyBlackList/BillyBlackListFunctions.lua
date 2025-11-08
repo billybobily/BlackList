@@ -451,6 +451,39 @@ function BlackList:RemoveExpired()
 	end
 end
 
+-- Base64 encoding table
+local b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+-- Base64 encode function
+local function base64_encode(data)
+	return ((data:gsub('.', function(x) 
+		local r,b='',x:byte()
+		for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
+		return r;
+	end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+		if (#x < 6) then return '' end
+		local c=0
+		for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
+		return b64chars:sub(c+1,c+1)
+	end)..({ '', '==', '=' })[#data%3+1])
+end
+
+-- Base64 decode function
+local function base64_decode(data)
+	data = string.gsub(data, '[^'..b64chars..'=]', '')
+	return (data:gsub('.', function(x)
+		if (x == '=') then return '' end
+		local r,f='',(b64chars:find(x)-1)
+		for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
+		return r;
+	end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+		if (#x ~= 8) then return '' end
+		local c=0
+		for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
+		return string.char(c)
+	end))
+end
+
 -- Encode blacklist to shareable string
 function BlackList:EncodeBlacklist()
 	local list = self:GetActiveList()
@@ -459,22 +492,14 @@ function BlackList:EncodeBlacklist()
 	for i = 1, table.getn(list) do
 		local player = list[i]
 		if player and player["name"] then
-			-- Escape special characters in reason (backslash, pipe, and newline)
-			local reason = player["reason"] or ""
-			reason = string.gsub(reason, "\\", "\\\\")  -- Escape backslashes first
-			reason = string.gsub(reason, "\n", "\\n")   -- Escape newlines
-			reason = string.gsub(reason, "\r", "\\r")   -- Escape carriage returns
-			reason = string.gsub(reason, "|", "\\|")    -- Then escape pipes
-			
 			-- Format: name|reason|added|level|class|race|expiry
-			-- Use empty string for nil expiry instead of "nil"
 			local expiryStr = ""
 			if player["expiry"] and player["expiry"] ~= "" then
 				expiryStr = tostring(player["expiry"])
 			end
 			
 			local entry = player["name"] .. "|" ..
-			              reason .. "|" ..
+			              (player["reason"] or "") .. "|" ..
 			              (player["added"] or 0) .. "|" ..
 			              (player["level"] or "") .. "|" ..
 			              (player["class"] or "") .. "|" ..
@@ -484,8 +509,9 @@ function BlackList:EncodeBlacklist()
 		end
 	end
 	
-	-- Join all entries with newlines
-	return table.concat(encoded, "\n")
+	-- Join all entries with newlines and then base64 encode
+	local plaintext = table.concat(encoded, "\n")
+	return base64_encode(plaintext)
 end
 
 -- Decode and import blacklist from string
@@ -495,88 +521,50 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 		return 0
 	end
 	
-	local imported = {}
+	-- Remove any whitespace from the encoded string
+	encodedString = string.gsub(encodedString, "%s+", "")
 	
-	-- Replace actual newlines with a placeholder first, then split by unescaped newlines
-	-- This handles the case where the EditBox interprets newlines
-	local normalizedString = string.gsub(encodedString, "\r\n", "\n")  -- Normalize line endings
-	normalizedString = string.gsub(normalizedString, "\r", "\n")
+	-- Base64 decode
+	local plaintext = base64_decode(encodedString)
+	if not plaintext or plaintext == "" then
+		self:AddMessage("BlackList: Invalid import data.", "yellow")
+		return 0
+	end
+	
+	local imported = {}
 	
 	-- Split by newlines to get individual entries
 	local lines = {}
-	for line in string.gfind(normalizedString, "[^\n]+") do
+	for line in string.gfind(plaintext, "[^\n]+") do
 		if line ~= "" then
 			table.insert(lines, line)
 		end
 	end
 	
-	-- Parse each line
+	-- Parse each line (simple pipe-delimited format, no escaping needed)
 	for _, line in ipairs(lines) do
-		-- Split by pipe, but handle escaped characters (\|, \\, \n, \r)
 		local parts = {}
-		local current = ""
-		local i = 1
-		local len = string.len(line)
-		
-		while i <= len do
-			local char = string.sub(line, i, i)
-			if char == "\\" then
-				-- Escape sequence - get next character
-				if i < len then
-					local nextChar = string.sub(line, i+1, i+1)
-					if nextChar == "|" then
-						-- Escaped pipe
-						current = current .. "|"
-						i = i + 2
-					elseif nextChar == "\\" then
-						-- Escaped backslash
-						current = current .. "\\"
-						i = i + 2
-					elseif nextChar == "n" then
-						-- Escaped newline
-						current = current .. "\n"
-						i = i + 2
-					elseif nextChar == "r" then
-						-- Escaped carriage return
-						current = current .. "\r"
-						i = i + 2
-					else
-						-- Unknown escape, keep backslash
-						current = current .. char
-						i = i + 1
-					end
-				else
-					-- Trailing backslash
-					current = current .. char
-					i = i + 1
-				end
-			elseif char == "|" then
-				-- Field separator
-				table.insert(parts, current)
-				current = ""
-				i = i + 1
-			else
-				current = current .. char
-				i = i + 1
-			end
+		for part in string.gfind(line, "([^|]*)") do
+			table.insert(parts, part)
 		end
-		-- Add the last part
-		table.insert(parts, current)
 		
-		-- Debug output
+		-- Remove empty trailing parts (artifact of gfind)
+		while table.getn(parts) > 0 and parts[table.getn(parts)] == "" do
+			table.remove(parts)
+		end
+		
 		if BlackList:GetOption("debugMode", false) then
-			DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Line: " .. line, 1, 1, 0)
 			DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Parts count: " .. table.getn(parts), 1, 1, 0)
 			for i = 1, table.getn(parts) do
 				DEFAULT_CHAT_FRAME:AddMessage("  Part[" .. i .. "]: '" .. parts[i] .. "'", 0.8, 0.8, 0.8)
 			end
 		end
 		
-		if table.getn(parts) >= 7 and parts[1] ~= "" then
-			-- Convert empty strings to proper nil/defaults
+		if table.getn(parts) >= 3 and parts[1] ~= "" then
+			-- Minimum required: name, reason, added
 			local addedTime = tonumber(parts[3])
 			if not addedTime or addedTime == 0 then
-				addedTime = time()  -- Use current time if invalid
+				addedTime = time()
 			end
 			
 			local expiryTime = nil
@@ -586,19 +574,13 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 			
 			local player = {
 				["name"] = parts[1],
-				["reason"] = parts[2] ~= "" and parts[2] or "",
+				["reason"] = parts[2] or "",
 				["added"] = addedTime,
-				["level"] = parts[4] ~= "" and parts[4] or "",
-				["class"] = parts[5] ~= "" and parts[5] or "",
-				["race"] = parts[6] ~= "" and parts[6] or "",
+				["level"] = parts[4] or "",
+				["class"] = parts[5] or "",
+				["race"] = parts[6] or "",
 				["expiry"] = expiryTime
 			}
-			
-			if BlackList:GetOption("debugMode", false) then
-				DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Created player: " .. parts[1], 0, 1, 0)
-				DEFAULT_CHAT_FRAME:AddMessage("  Level: '" .. (player["level"] or "nil") .. "'", 0.8, 0.8, 0.8)
-				DEFAULT_CHAT_FRAME:AddMessage("  Added: " .. player["added"], 0.8, 0.8, 0.8)
-			end
 			
 			table.insert(imported, player)
 		end
