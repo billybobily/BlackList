@@ -550,25 +550,14 @@ function BlackList:EncodeBlacklist()
 		end
 	end
 	
-	-- Join all entries with newlines and then base64 encode
-	local plaintext = table.concat(encoded, "\n")
-	return base64_encode(plaintext)
+	-- Join all entries with newlines
+	return table.concat(encoded, "\n")
 end
 
 -- Decode and import blacklist from string
-function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
-	if not encodedString or encodedString == "" then
+function BlackList:DecodeAndImportBlacklist(importString, overwrite)
+	if not importString or importString == "" then
 		self:AddMessage("BlackList: Nothing to import.", "yellow")
-		return 0
-	end
-	
-	-- Remove any whitespace from the encoded string
-	encodedString = string.gsub(encodedString, "%s+", "")
-	
-	-- Base64 decode
-	local plaintext = base64_decode(encodedString)
-	if not plaintext or plaintext == "" then
-		self:AddMessage("BlackList: Invalid import data.", "yellow")
 		return 0
 	end
 	
@@ -576,7 +565,7 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 	
 	-- Split by newlines to get individual entries
 	local lines = {}
-	for line in string.gfind(plaintext, "[^\n]+") do
+	for line in string.gfind(importString, "[^\n]+") do
 		if line ~= "" then
 			table.insert(lines, line)
 		end
