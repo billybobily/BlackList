@@ -455,33 +455,39 @@ end
 local b64chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
 -- Base64 encode function
-local function base64_encode(data)
-	return ((data:gsub('.', function(x) 
+function base64_encode(data)
+	local result = data:gsub('.', function(x) 
 		local r,b='',string.byte(x)
 		for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
 		return r;
-	end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+	end)
+	result = result..'0000'
+	result = result:gsub('%d%d%d?%d?%d?%d?', function(x)
 		if (string.len(x) < 6) then return '' end
 		local c=0
 		for i=1,6 do c=c+(string.sub(x,i,i)=='1' and 2^(6-i) or 0) end
 		return string.sub(b64chars,c+1,c+1)
-	end)..({ '', '==', '=' })[string.len(data)%3+1])
+	end)
+	local padding = ({ '', '==', '=' })[string.len(data)%3+1]
+	return result..padding
 end
 
 -- Base64 decode function
-local function base64_decode(data)
+function base64_decode(data)
 	data = string.gsub(data, '[^'..b64chars..'=]', '')
-	return (data:gsub('.', function(x)
+	local result = data:gsub('.', function(x)
 		if (x == '=') then return '' end
 		local r,f='',(string.find(b64chars,x)-1)
 		for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
 		return r;
-	end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+	end)
+	result = result:gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
 		if (string.len(x) ~= 8) then return '' end
 		local c=0
 		for i=1,8 do c=c+(string.sub(x,i,i)=='1' and 2^(8-i) or 0) end
 		return string.char(c)
-	end))
+	end)
+	return result
 end
 
 -- Encode blacklist to shareable string
