@@ -459,9 +459,11 @@ function BlackList:EncodeBlacklist()
 	for i = 1, table.getn(list) do
 		local player = list[i]
 		if player and player["name"] then
-			-- Escape special characters in reason (backslash and pipe)
+			-- Escape special characters in reason (backslash, pipe, and newline)
 			local reason = player["reason"] or ""
 			reason = string.gsub(reason, "\\", "\\\\")  -- Escape backslashes first
+			reason = string.gsub(reason, "\n", "\\n")   -- Escape newlines
+			reason = string.gsub(reason, "\r", "\\r")   -- Escape carriage returns
 			reason = string.gsub(reason, "|", "\\|")    -- Then escape pipes
 			
 			-- Format: name|reason|added|level|class|race|expiry
@@ -503,7 +505,7 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 	
 	-- Parse each line
 	for _, line in ipairs(lines) do
-		-- Split by pipe, but handle escaped characters (\| and \\)
+		-- Split by pipe, but handle escaped characters (\|, \\, \n, \r)
 		local parts = {}
 		local current = ""
 		local i = 1
@@ -515,9 +517,21 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 				-- Escape sequence - get next character
 				if i < len then
 					local nextChar = string.sub(line, i+1, i+1)
-					if nextChar == "|" or nextChar == "\\" then
-						-- Escaped pipe or backslash
-						current = current .. nextChar
+					if nextChar == "|" then
+						-- Escaped pipe
+						current = current .. "|"
+						i = i + 2
+					elseif nextChar == "\\" then
+						-- Escaped backslash
+						current = current .. "\\"
+						i = i + 2
+					elseif nextChar == "n" then
+						-- Escaped newline
+						current = current .. "\n"
+						i = i + 2
+					elseif nextChar == "r" then
+						-- Escaped carriage return
+						current = current .. "\r"
 						i = i + 2
 					else
 						-- Unknown escape, keep backslash
