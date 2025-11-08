@@ -459,14 +459,25 @@ function BlackList:EncodeBlacklist()
 	for i = 1, table.getn(list) do
 		local player = list[i]
 		if player and player["name"] then
+			-- Escape special characters in reason (backslash and pipe)
+			local reason = player["reason"] or ""
+			reason = string.gsub(reason, "\\", "\\\\")  -- Escape backslashes first
+			reason = string.gsub(reason, "|", "\\|")    -- Then escape pipes
+			
 			-- Format: name|reason|added|level|class|race|expiry
+			-- Use empty string for nil expiry instead of "nil"
+			local expiryStr = ""
+			if player["expiry"] and player["expiry"] ~= "" then
+				expiryStr = tostring(player["expiry"])
+			end
+			
 			local entry = player["name"] .. "|" ..
-			              (player["reason"] or "") .. "|" ..
+			              reason .. "|" ..
 			              (player["added"] or 0) .. "|" ..
 			              (player["level"] or "") .. "|" ..
 			              (player["class"] or "") .. "|" ..
 			              (player["race"] or "") .. "|" ..
-			              (player["expiry"] or "")
+			              expiryStr
 			table.insert(encoded, entry)
 		end
 	end
@@ -492,20 +503,65 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 	
 	-- Parse each line
 	for _, line in ipairs(lines) do
+		-- Split by pipe, but handle escaped characters (\| and \\)
 		local parts = {}
-		for part in string.gfind(line, "[^|]*") do
-			table.insert(parts, part)
+		local current = ""
+		local i = 1
+		local len = string.len(line)
+		
+		while i <= len do
+			local char = string.sub(line, i, i)
+			if char == "\\" then
+				-- Escape sequence - get next character
+				if i < len then
+					local nextChar = string.sub(line, i+1, i+1)
+					if nextChar == "|" or nextChar == "\\" then
+						-- Escaped pipe or backslash
+						current = current .. nextChar
+						i = i + 2
+					else
+						-- Unknown escape, keep backslash
+						current = current .. char
+						i = i + 1
+					end
+				else
+					-- Trailing backslash
+					current = current .. char
+					i = i + 1
+				end
+			elseif char == "|" then
+				-- Field separator
+				table.insert(parts, current)
+				current = ""
+				i = i + 1
+			else
+				current = current .. char
+				i = i + 1
+			end
 		end
+		-- Add the last part
+		table.insert(parts, current)
 		
 		if table.getn(parts) >= 7 and parts[1] ~= "" then
+			-- Convert empty strings to proper nil/defaults
+			local addedTime = tonumber(parts[3])
+			if not addedTime or addedTime == 0 then
+				addedTime = time()  -- Use current time if invalid
+			end
+			
+			local expiryTime = nil
+			if parts[7] and parts[7] ~= "" then
+				expiryTime = tonumber(parts[7])
+			end
+			
 			local player = {
 				["name"] = parts[1],
-				["reason"] = parts[2],
-				["added"] = tonumber(parts[3]) or 0,
-				["level"] = parts[4],
-				["class"] = parts[5],
-				["race"] = parts[6],
-				["expiry"] = parts[7] ~= "" and tonumber(parts[7]) or nil
+				["reason"] = parts[2] ~= "" and parts[2] or "",
+				["added"] = addedTime,
+				["level"] = parts[4] ~= "" and parts[4] or "",
+				["class"] = parts[5] ~= "" and parts[5] or "",
+				["race"] = parts[6] ~= "" and parts[6] or "",
+				["expiry"] = expiryTime
 			}
 			table.insert(imported, player)
 		end
