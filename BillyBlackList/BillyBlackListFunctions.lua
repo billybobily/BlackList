@@ -556,6 +556,15 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 		-- Add the last part
 		table.insert(parts, current)
 		
+		-- Debug output
+		if BlackList:GetOption("debugMode", false) then
+			DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Line: " .. line, 1, 1, 0)
+			DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Parts count: " .. table.getn(parts), 1, 1, 0)
+			for i = 1, table.getn(parts) do
+				DEFAULT_CHAT_FRAME:AddMessage("  Part[" .. i .. "]: '" .. parts[i] .. "'", 0.8, 0.8, 0.8)
+			end
+		end
+		
 		if table.getn(parts) >= 7 and parts[1] ~= "" then
 			-- Convert empty strings to proper nil/defaults
 			local addedTime = tonumber(parts[3])
@@ -577,6 +586,13 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 				["race"] = parts[6] ~= "" and parts[6] or "",
 				["expiry"] = expiryTime
 			}
+			
+			if BlackList:GetOption("debugMode", false) then
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Created player: " .. parts[1], 0, 1, 0)
+				DEFAULT_CHAT_FRAME:AddMessage("  Level: '" .. (player["level"] or "nil") .. "'", 0.8, 0.8, 0.8)
+				DEFAULT_CHAT_FRAME:AddMessage("  Added: " .. player["added"], 0.8, 0.8, 0.8)
+			end
+			
 			table.insert(imported, player)
 		end
 	end
