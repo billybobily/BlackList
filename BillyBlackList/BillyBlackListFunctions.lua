@@ -450,3 +450,135 @@ function BlackList:RemoveExpired()
 		end
 	end
 end
+
+-- Encode blacklist to shareable string
+function BlackList:EncodeBlacklist()
+	local list = self:GetActiveList()
+	local encoded = {}
+	
+	for i = 1, table.getn(list) do
+		local player = list[i]
+		if player and player["name"] then
+			-- Format: name|reason|added|level|class|race|expiry
+			local entry = player["name"] .. "|" ..
+			              (player["reason"] or "") .. "|" ..
+			              (player["added"] or 0) .. "|" ..
+			              (player["level"] or "") .. "|" ..
+			              (player["class"] or "") .. "|" ..
+			              (player["race"] or "") .. "|" ..
+			              (player["expiry"] or "")
+			table.insert(encoded, entry)
+		end
+	end
+	
+	-- Join all entries with newlines
+	return table.concat(encoded, "\n")
+end
+
+-- Decode and import blacklist from string
+function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
+	if not encodedString or encodedString == "" then
+		self:AddMessage("BlackList: Nothing to import.", "yellow")
+		return 0
+	end
+	
+	local imported = {}
+	local lines = {}
+	
+	-- Split by newlines
+	for line in string.gfind(encodedString, "[^\n]+") do
+		table.insert(lines, line)
+	end
+	
+	-- Parse each line
+	for _, line in ipairs(lines) do
+		local parts = {}
+		for part in string.gfind(line, "[^|]*") do
+			table.insert(parts, part)
+		end
+		
+		if table.getn(parts) >= 7 and parts[1] ~= "" then
+			local player = {
+				["name"] = parts[1],
+				["reason"] = parts[2],
+				["added"] = tonumber(parts[3]) or 0,
+				["level"] = parts[4],
+				["class"] = parts[5],
+				["race"] = parts[6],
+				["expiry"] = parts[7] ~= "" and tonumber(parts[7]) or nil
+			}
+			table.insert(imported, player)
+		end
+	end
+	
+	if table.getn(imported) == 0 then
+		self:AddMessage("BlackList: No valid entries found in import data.", "yellow")
+		return 0
+	end
+	
+	local list = self:GetActiveList()
+	local addedCount = 0
+	local updatedCount = 0
+	
+	if overwrite then
+		-- Clear existing list and replace with imported data
+		for i = table.getn(list), 1, -1 do
+			table.remove(list, i)
+		end
+		for _, player in ipairs(imported) do
+			table.insert(list, player)
+		end
+		addedCount = table.getn(imported)
+		self:AddMessage("BlackList: Replaced blacklist with " .. addedCount .. " imported player(s).", "yellow")
+	else
+		-- Merge with existing list, keeping most recent entries
+		local existingPlayers = {}
+		for i = 1, table.getn(list) do
+			if list[i] and list[i]["name"] then
+				existingPlayers[list[i]["name"]] = {
+					index = i,
+					added = list[i]["added"] or 0
+				}
+			end
+		end
+		
+		for _, player in ipairs(imported) do
+			local existing = existingPlayers[player["name"]]
+			local playerAdded = player["added"] or 0
+			
+			if not existing then
+				-- New player, add to list
+				table.insert(list, player)
+				existingPlayers[player["name"]] = {
+					index = table.getn(list),
+					added = playerAdded
+				}
+				addedCount = addedCount + 1
+			elseif playerAdded > existing.added then
+				-- Imported entry is newer, replace existing
+				list[existing.index] = player
+				existingPlayers[player["name"]].added = playerAdded
+				updatedCount = updatedCount + 1
+			end
+			-- If existing entry is newer or same age, keep it (do nothing)
+		end
+		
+		if addedCount > 0 or updatedCount > 0 then
+			local msg = "BlackList: Imported " .. addedCount .. " new player(s)"
+			if updatedCount > 0 then
+				msg = msg .. ", updated " .. updatedCount .. " existing player(s)"
+			end
+			self:AddMessage(msg .. ".", "yellow")
+		else
+			self:AddMessage("BlackList: No new or updated entries in import data.", "yellow")
+		end
+	end
+	
+	-- Update UI if visible
+	local standaloneFrame = getglobal("BlackListStandaloneFrame")
+	if standaloneFrame and standaloneFrame:IsVisible() then
+		self:UpdateStandaloneUI()
+	end
+	
+	return addedCount + updatedCount
+end

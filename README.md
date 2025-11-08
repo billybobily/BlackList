@@ -58,6 +58,18 @@ Billy's BlackList automatically shares your blacklist across **all characters on
 
 This means you only need to maintain one blacklist per realm, making it much easier to manage across multiple alts!
 
+**Sharing Blacklists Across Accounts:**
+
+You can share your blacklist with other WoW accounts using the "Shared" button:
+- Click the **"Shared"** button in the main BlackList window
+- Click **"Export"** to generate an encoded version of your blacklist - the text will be automatically selected for easy copying (Ctrl+C)
+- Send the encoded text to another account (Discord, email, etc.)
+- On the other account, paste the text into the Shared window and click **"Import"**
+- **Import behavior:**
+  - By default, importing merges the lists and keeps the most recent entry for duplicate names
+  - Check **"Overwrite existing blacklist"** to completely replace your current list with the imported one
+- This is useful for sharing blacklists between your main and alt accounts, or coordinating with friends/guildmates
+
 ## Options and features
 
 Click the "Options" button in the BlackList tab to access detailed settings:

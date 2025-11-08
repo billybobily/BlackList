@@ -333,6 +333,12 @@ function BlackList:ShowNewOptions()
 		detailsFrame:Hide()
 	end
 	
+	-- Close shared window if open
+	local sharedFrame = getglobal("BlackListSharedFrame")
+	if sharedFrame and sharedFrame:IsVisible() then
+		sharedFrame:Hide()
+	end
+	
 	-- Toggle behavior: if already shown, hide it
 	if frame:IsVisible() then
 		frame:Hide()
@@ -458,6 +464,13 @@ function BlackList:RepositionChildWindows()
 		optionsFrame:ClearAllPoints()
 		optionsFrame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
 	end
+	
+	-- Reposition shared frame (aligned with upper right corner)
+	local sharedFrame = getglobal("BlackListSharedFrame")
+	if sharedFrame and sharedFrame:IsVisible() then
+		sharedFrame:ClearAllPoints()
+		sharedFrame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
+	end
 end
 
 function BlackList:CreateStandaloneWindow()
@@ -536,6 +549,10 @@ function BlackList:CreateStandaloneWindow()
 		local optionsFrame = getglobal("BlackListOptionsFrame_New")
 		if optionsFrame and optionsFrame:IsVisible() then
 			optionsFrame:Hide()
+		end
+		local sharedFrame = getglobal("BlackListSharedFrame")
+		if sharedFrame and sharedFrame:IsVisible() then
+			sharedFrame:Hide()
 		end
 	end)
 	
@@ -667,10 +684,20 @@ function BlackList:CreateStandaloneWindow()
 	local optionsBtn = CreateFrame("Button", "BlackListStandalone_OptionsButton", frame, "UIPanelButtonTemplate")
 	optionsBtn:SetWidth(100)
 	optionsBtn:SetHeight(22)
-	optionsBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -15, 15)
+	optionsBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -15, 45)
 	optionsBtn:SetText("Options")
 	optionsBtn:SetScript("OnClick", function()
 		BlackList:ShowNewOptions()
+	end)
+	
+	-- Share button (bottom right, under Options)
+	local sharedBtn = CreateFrame("Button", "BlackListStandalone_SharedButton", frame, "UIPanelButtonTemplate")
+	sharedBtn:SetWidth(100)
+	sharedBtn:SetHeight(22)
+	sharedBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -15, 15)
+	sharedBtn:SetText("Share")
+	sharedBtn:SetScript("OnClick", function()
+		BlackList:ShowSharedWindow()
 	end)
 	
 	-- Apply pfUI styling to buttons if available
@@ -678,6 +705,7 @@ function BlackList:CreateStandaloneWindow()
 		pfUI.api.CreateBackdrop(addBtn, nil, true)
 		pfUI.api.CreateBackdrop(removeBtn, nil, true)
 		pfUI.api.CreateBackdrop(optionsBtn, nil, true)
+		pfUI.api.CreateBackdrop(sharedBtn, nil, true)
 	end
 	
 	DEFAULT_CHAT_FRAME:AddMessage("BlackList: Standalone window created", 0, 1, 0)
@@ -854,6 +882,11 @@ function BlackList:ShowStandaloneDetails()
 			local optionsFrame = getglobal("BlackListOptionsFrame_New")
 			if optionsFrame and optionsFrame:IsVisible() then
 				optionsFrame:Hide()
+			end
+			-- Close shared window when details is opened
+			local sharedFrame = getglobal("BlackListSharedFrame")
+			if sharedFrame and sharedFrame:IsVisible() then
+				sharedFrame:Hide()
 			end
 		end)
 		
@@ -1145,6 +1178,189 @@ function BlackList:ShowStandaloneDetails()
 	end
 	
 	detailsFrame:Show()
+end
+
+-- Show Shared window for import/export
+function BlackList:ShowSharedWindow()
+	local sharedFrame = getglobal("BlackListSharedFrame")
+	
+	-- Close other sub-windows before showing this one
+	local detailsFrame = getglobal("BlackListStandaloneDetailsFrame")
+	if detailsFrame and detailsFrame:IsVisible() then
+		detailsFrame:Hide()
+	end
+	
+	local optionsFrame = getglobal("BlackListOptionsFrame_New")
+	if optionsFrame and optionsFrame:IsVisible() then
+		optionsFrame:Hide()
+	end
+	
+	if not sharedFrame then
+		-- Create the Shared window
+		sharedFrame = CreateFrame("Frame", "BlackListSharedFrame", UIParent)
+		sharedFrame:SetWidth(450)
+		sharedFrame:SetHeight(400)
+		sharedFrame:SetFrameStrata("DIALOG")
+		sharedFrame:SetMovable(true)
+		sharedFrame:EnableMouse(true)
+		sharedFrame:SetClampedToScreen(true)
+		
+		-- Position next to main window
+		local mainFrame = getglobal("BlackListStandaloneFrame")
+		if mainFrame then
+			sharedFrame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
+		else
+			sharedFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+		end
+		
+		-- Add to UISpecialFrames so Escape key closes it
+		table.insert(UISpecialFrames, "BlackListSharedFrame")
+		
+		-- Set default backdrop
+		sharedFrame:SetBackdrop({
+			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+			edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+			tile = true, tileSize = 32, edgeSize = 32,
+			insets = {left = 11, right = 12, top = 12, bottom = 11}
+		})
+		
+		-- Apply pfUI styling on first show
+		sharedFrame:SetScript("OnShow", function()
+			if IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
+				if not this.pfuiStyled then
+					pfUI.api.CreateBackdrop(this, nil, true)
+					this.pfuiStyled = true
+				end
+				
+				local closeBtn = this.closeBtn
+				if closeBtn and pfUI.api.SkinCloseButton and not closeBtn.pfuiStyled then
+					closeBtn:ClearAllPoints()
+					pfUI.api.SkinCloseButton(closeBtn, this.backdrop or this, -6, -6)
+					closeBtn.pfuiStyled = true
+				end
+			end
+		end)
+		
+		-- Title
+		local title = sharedFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+		title:SetPoint("TOP", sharedFrame, "TOP", 0, -15)
+		title:SetText("Share Blacklist")
+		
+		-- Close button
+		local closeBtn = CreateFrame("Button", nil, sharedFrame, "UIPanelCloseButton")
+		closeBtn:SetPoint("TOPRIGHT", sharedFrame, "TOPRIGHT", -5, -5)
+		closeBtn:SetScript("OnClick", function() sharedFrame:Hide() end)
+		sharedFrame.closeBtn = closeBtn
+		
+		-- Instructions text
+		local instructions = sharedFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		instructions:SetPoint("TOPLEFT", sharedFrame, "TOPLEFT", 20, -40)
+		instructions:SetPoint("TOPRIGHT", sharedFrame, "TOPRIGHT", -20, -40)
+		instructions:SetJustifyH("LEFT")
+		instructions:SetText("Export your blacklist to share with other accounts, or import a blacklist from someone else.")
+		
+		-- Create scroll frame for text
+		local scrollFrame = CreateFrame("ScrollFrame", "BlackListSharedScrollFrame", sharedFrame, "UIPanelScrollFrameTemplate")
+		scrollFrame:SetPoint("TOPLEFT", sharedFrame, "TOPLEFT", 20, -70)
+		scrollFrame:SetPoint("BOTTOMRIGHT", sharedFrame, "BOTTOMRIGHT", -40, 80)
+		
+		-- Create edit box for the encoded data
+		local editBox = CreateFrame("EditBox", "BlackListSharedEditBox", scrollFrame)
+		editBox:SetMultiLine(true)
+		editBox:SetAutoFocus(false)
+		editBox:SetFontObject(GameFontHighlightSmall)
+		editBox:SetWidth(380)
+		editBox:SetHeight(240)
+		editBox:SetMaxLetters(0)
+		editBox:SetScript("OnEscapePressed", function() this:ClearFocus() end)
+		
+		-- Make text selectable
+		editBox:SetScript("OnTextChanged", function()
+			-- Auto-scroll to bottom when text changes
+			scrollFrame:UpdateScrollChildRect()
+		end)
+		
+		scrollFrame:SetScrollChild(editBox)
+		sharedFrame.editBox = editBox
+		
+		-- Export button
+		local exportBtn = CreateFrame("Button", "BlackListShared_ExportButton", sharedFrame, "UIPanelButtonTemplate")
+		exportBtn:SetWidth(120)
+		exportBtn:SetHeight(22)
+		exportBtn:SetPoint("BOTTOMLEFT", sharedFrame, "BOTTOMLEFT", 20, 45)
+		exportBtn:SetText("Export")
+		exportBtn:SetScript("OnClick", function()
+			local encoded = BlackList:EncodeBlacklist()
+			editBox:SetText(encoded)
+			editBox:HighlightText()
+			editBox:SetFocus()
+			BlackList:AddMessage("BlackList: Exported " .. BlackList:GetNumBlackLists() .. " player(s). Press Ctrl+C to copy.", "yellow")
+		end)
+		
+		-- Import button
+		local importBtn = CreateFrame("Button", "BlackListShared_ImportButton", sharedFrame, "UIPanelButtonTemplate")
+		importBtn:SetWidth(120)
+		importBtn:SetHeight(22)
+		importBtn:SetPoint("BOTTOMLEFT", sharedFrame, "BOTTOMLEFT", 150, 45)
+		importBtn:SetText("Import")
+		importBtn:SetScript("OnClick", function()
+			local text = editBox:GetText()
+			local overwriteCheck = getglobal("BlackListShared_OverwriteCheck")
+			local overwrite = overwriteCheck and overwriteCheck:GetChecked()
+			
+			local count = BlackList:DecodeAndImportBlacklist(text, overwrite)
+			if count > 0 then
+				-- Clear the text box after successful import
+				editBox:SetText("")
+			end
+		end)
+		
+		-- Overwrite checkbox
+		local overwriteCheck = CreateFrame("CheckButton", "BlackListShared_OverwriteCheck", sharedFrame, "UICheckButtonTemplate")
+		overwriteCheck:SetPoint("BOTTOMLEFT", sharedFrame, "BOTTOMLEFT", 20, 15)
+		overwriteCheck:SetWidth(24)
+		overwriteCheck:SetHeight(24)
+		
+		local overwriteLabel = sharedFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		overwriteLabel:SetPoint("LEFT", overwriteCheck, "RIGHT", 0, 0)
+		overwriteLabel:SetText("Overwrite existing blacklist on import")
+		
+		-- Close button at bottom right
+		local closeBottomBtn = CreateFrame("Button", nil, sharedFrame, "UIPanelButtonTemplate")
+		closeBottomBtn:SetWidth(80)
+		closeBottomBtn:SetHeight(22)
+		closeBottomBtn:SetPoint("BOTTOMRIGHT", sharedFrame, "BOTTOMRIGHT", -20, 15)
+		closeBottomBtn:SetText("Close")
+		closeBottomBtn:SetScript("OnClick", function() sharedFrame:Hide() end)
+		
+		-- Apply pfUI styling to buttons if available
+		if IsPfUIActive() then
+			pfUI.api.CreateBackdrop(exportBtn, nil, true)
+			pfUI.api.CreateBackdrop(importBtn, nil, true)
+			pfUI.api.CreateBackdrop(closeBottomBtn, nil, true)
+		end
+		
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: Shared window created", 0, 1, 0)
+	end
+	
+	-- Position relative to main window
+	sharedFrame:ClearAllPoints()
+	local mainFrame = getglobal("BlackListStandaloneFrame")
+	if mainFrame and mainFrame:IsVisible() then
+		-- Position relative to standalone window
+		sharedFrame:SetPoint("TOPLEFT", mainFrame, "TOPRIGHT", 10, 0)
+	else
+		sharedFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+	end
+	
+	-- Clear the edit box when opening
+	local editBox = sharedFrame.editBox
+	if editBox then
+		editBox:SetText("")
+		editBox:ClearFocus()
+	end
+	
+	sharedFrame:Show()
 end
 
 function BlackList:ClickBlackList()
