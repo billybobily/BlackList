@@ -584,17 +584,25 @@ function BlackList:DecodeAndImportBlacklist(encodedString, overwrite)
 	
 	-- Parse each line (simple pipe-delimited format, no escaping needed)
 	for _, line in ipairs(lines) do
+		-- Split by pipe manually to ensure exactly 7 parts
 		local parts = {}
-		for part in string.gfind(line, "([^|]*)") do
-			table.insert(parts, part)
-		end
+		local current = ""
+		local len = string.len(line)
 		
-		-- Remove empty trailing parts (artifact of gfind)
-		while table.getn(parts) > 0 and parts[table.getn(parts)] == "" do
-			table.remove(parts)
+		for i = 1, len do
+			local char = string.sub(line, i, i)
+			if char == "|" then
+				table.insert(parts, current)
+				current = ""
+			else
+				current = current .. char
+			end
 		end
+		-- Add the last part
+		table.insert(parts, current)
 		
 		if BlackList:GetOption("debugMode", false) then
+			DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Line: " .. line, 1, 1, 0)
 			DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Parts count: " .. table.getn(parts), 1, 1, 0)
 			for i = 1, table.getn(parts) do
 				DEFAULT_CHAT_FRAME:AddMessage("  Part[" .. i .. "]: '" .. parts[i] .. "'", 0.8, 0.8, 0.8)
