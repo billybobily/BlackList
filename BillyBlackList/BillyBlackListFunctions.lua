@@ -577,6 +577,9 @@ function BlackList:EncodeBlacklist()
 		end
 	end
 	
+	-- Add header line as first entry
+	table.insert(encoded, 1, "name@reason@added_time@level@class@race@expiry_time")
+	
 	-- Join all entries with newlines
 	return table.concat(encoded, "\n")
 end
@@ -608,10 +611,16 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 	
 	-- Parse each line (@-delimited format with escaping)
 	for _, line in ipairs(lines) do
-		-- Split by @ manually to ensure exactly 7 parts
-		local parts = {}
-		local current = ""
-		local len = string.len(line)
+		-- Skip header line
+		if line == "name@reason@added_time@level@class@race@expiry_time" then
+			if BlackList:GetOption("debugMode", false) then
+				DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Skipping header line", 1, 1, 0)
+			end
+		else
+			-- Split by @ manually to ensure exactly 7 parts
+			local parts = {}
+			local current = ""
+			local len = string.len(line)
 		
 		for i = 1, len do
 			local char = string.sub(line, i, i)
@@ -658,6 +667,7 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 			
 			table.insert(imported, player)
 		end
+		end -- end of header check else
 	end
 	
 	if table.getn(imported) == 0 then
