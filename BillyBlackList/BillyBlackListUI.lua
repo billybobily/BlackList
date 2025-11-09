@@ -850,6 +850,18 @@ function BlackList:ShowStandaloneDetails()
 	local player = self:GetPlayerByIndex(self:GetSelectedBlackList())
 	if not player then return end
 	
+	-- Close options window if open
+	local optionsFrame = getglobal("BlackListOptionsFrame_New")
+	if optionsFrame and optionsFrame:IsVisible() then
+		optionsFrame:Hide()
+	end
+	
+	-- Close shared window if open
+	local sharedFrame = getglobal("BlackListSharedFrame")
+	if sharedFrame and sharedFrame:IsVisible() then
+		sharedFrame:Hide()
+	end
+	
 	-- Create or get details frame
 	local detailsFrame = getglobal("BlackListStandaloneDetailsFrame")
 	if not detailsFrame then
@@ -1230,23 +1242,6 @@ function BlackList:ShowSharedWindow()
 			insets = {left = 11, right = 12, top = 12, bottom = 11}
 		})
 		
-		-- Apply pfUI styling on first show
-		sharedFrame:SetScript("OnShow", function()
-			if IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
-				if not this.pfuiStyled then
-					pfUI.api.CreateBackdrop(this, nil, true)
-					this.pfuiStyled = true
-				end
-				
-				local closeBtn = this.closeBtn
-				if closeBtn and pfUI.api.SkinCloseButton and not closeBtn.pfuiStyled then
-					closeBtn:ClearAllPoints()
-					pfUI.api.SkinCloseButton(closeBtn, this.backdrop or this, -6, -6)
-					closeBtn.pfuiStyled = true
-				end
-			end
-		end)
-		
 		-- Title
 		local title = sharedFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 		title:SetPoint("TOP", sharedFrame, "TOP", 0, -15)
@@ -1257,6 +1252,18 @@ function BlackList:ShowSharedWindow()
 		closeBtn:SetPoint("TOPRIGHT", sharedFrame, "TOPRIGHT", -5, -5)
 		closeBtn:SetScript("OnClick", function() sharedFrame:Hide() end)
 		sharedFrame.closeBtn = closeBtn
+		
+		-- Apply pfUI styling immediately if available (like options and details frames)
+		if IsPfUIActive() and pfUI and pfUI.api and pfUI.api.CreateBackdrop then
+			pfUI.api.CreateBackdrop(sharedFrame, nil, true)
+			sharedFrame.pfuiStyled = true
+			
+			if pfUI.api.SkinCloseButton then
+				closeBtn:ClearAllPoints()
+				pfUI.api.SkinCloseButton(closeBtn, sharedFrame.backdrop or sharedFrame, -6, -6)
+				closeBtn.pfuiStyled = true
+			end
+		end
 		
 		-- Instructions text
 		local instructions = sharedFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -1285,9 +1292,10 @@ function BlackList:ShowSharedWindow()
 		editBox:SetMultiLine(true)
 		editBox:SetAutoFocus(false)
 		editBox:SetFontObject(GameFontHighlightSmall)
-		editBox:SetWidth(380)
-		editBox:SetHeight(240)
+		editBox:SetWidth(370)
+		editBox:SetHeight(230)
 		editBox:SetMaxLetters(0)
+		editBox:SetPoint("TOPLEFT", scrollFrame, "TOPLEFT", 8, -8)
 		editBox:SetScript("OnEscapePressed", function() this:ClearFocus() end)
 		
 		-- Make text selectable
