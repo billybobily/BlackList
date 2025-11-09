@@ -1287,6 +1287,15 @@ function BlackList:ShowSharedWindow()
 		scrollFrame:SetBackdropColor(0, 0, 0, 0.8)
 		scrollFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
 		
+		-- Make scrollFrame clickable to focus the editbox
+		scrollFrame:EnableMouse(true)
+		scrollFrame:SetScript("OnMouseDown", function()
+			local editBox = getglobal("BlackListSharedEditBox")
+			if editBox then
+				editBox:SetFocus()
+			end
+		end)
+		
 		-- Create edit box for the encoded data
 		local editBox = CreateFrame("EditBox", "BlackListSharedEditBox", scrollFrame)
 		editBox:SetMultiLine(true)
