@@ -665,6 +665,30 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 		return 0
 	end
 	
+	-- Deduplicate imported entries, keeping the most recent of each name
+	local dedupedImported = {}
+	local importedNames = {}
+	
+	for _, player in ipairs(imported) do
+		local name = player["name"]
+		local existing = importedNames[name]
+		local playerAdded = player["added"] or 0
+		
+		if not existing then
+			-- First occurrence of this name
+			table.insert(dedupedImported, player)
+			importedNames[name] = {
+				index = table.getn(dedupedImported),
+				added = playerAdded
+			}
+		elseif playerAdded > existing.added then
+			-- This entry is newer than the previous one, replace it
+			dedupedImported[existing.index] = player
+			importedNames[name].added = playerAdded
+		end
+		-- Otherwise, skip this duplicate (older entry)
+	end
+	
 	local list = self:GetActiveList()
 	local addedCount = 0
 	local updatedCount = 0
@@ -674,10 +698,10 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 		for i = table.getn(list), 1, -1 do
 			table.remove(list, i)
 		end
-		for _, player in ipairs(imported) do
+		for _, player in ipairs(dedupedImported) do
 			table.insert(list, player)
 		end
-		addedCount = table.getn(imported)
+		addedCount = table.getn(dedupedImported)
 		self:AddMessage("BlackList: Replaced blacklist with " .. addedCount .. " imported player(s).", "yellow")
 	else
 		-- Merge with existing list, keeping most recent entries
@@ -691,7 +715,7 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 			end
 		end
 		
-		for _, player in ipairs(imported) do
+		for _, player in ipairs(dedupedImported) do
 			local existing = existingPlayers[player["name"]]
 			local playerAdded = player["added"] or 0
 			
