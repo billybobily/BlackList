@@ -1263,12 +1263,22 @@ function BlackList:ShowSharedWindow()
 		instructions:SetPoint("TOPLEFT", sharedFrame, "TOPLEFT", 20, -40)
 		instructions:SetPoint("TOPRIGHT", sharedFrame, "TOPRIGHT", -20, -40)
 		instructions:SetJustifyH("LEFT")
-		instructions:SetText("Export your blacklist to share with other accounts, or import a blacklist from someone else.")
+		instructions:SetText("Export/import blacklist to share with other accounts.")
 		
 		-- Create scroll frame for text
 		local scrollFrame = CreateFrame("ScrollFrame", "BlackListSharedScrollFrame", sharedFrame, "UIPanelScrollFrameTemplate")
-		scrollFrame:SetPoint("TOPLEFT", sharedFrame, "TOPLEFT", 20, -70)
+		scrollFrame:SetPoint("TOPLEFT", sharedFrame, "TOPLEFT", 20, -65)
 		scrollFrame:SetPoint("BOTTOMRIGHT", sharedFrame, "BOTTOMRIGHT", -40, 80)
+		
+		-- Create a backdrop for the scroll frame to make it visible
+		scrollFrame:SetBackdrop({
+			bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = true, tileSize = 16, edgeSize = 16,
+			insets = {left = 4, right = 4, top = 4, bottom = 4}
+		})
+		scrollFrame:SetBackdropColor(0, 0, 0, 0.8)
+		scrollFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
 		
 		-- Create edit box for the encoded data
 		local editBox = CreateFrame("EditBox", "BlackListSharedEditBox", scrollFrame)
