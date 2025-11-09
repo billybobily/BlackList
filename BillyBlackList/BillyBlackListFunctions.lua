@@ -530,11 +530,11 @@ local function EscapeForExport(str)
 	if not str or str == "" then
 		return ""
 	end
-	-- Replace newlines and broken bars with escape sequences
+	-- Replace newlines and tildes with escape sequences
 	str = string.gsub(str, "\\", "\\\\")  -- Escape backslashes first
 	str = string.gsub(str, "\n", "\\n")   -- Escape newlines
 	str = string.gsub(str, "\r", "\\r")   -- Escape carriage returns
-	str = string.gsub(str, "¦", "\\b")    -- Escape broken bars
+	str = string.gsub(str, "~", "\\t")    -- Escape tildes
 	return str
 end
 
@@ -544,7 +544,7 @@ local function UnescapeForImport(str)
 		return ""
 	end
 	-- Replace escape sequences back to actual characters
-	str = string.gsub(str, "\\b", "¦")    -- Unescape broken bars
+	str = string.gsub(str, "\\t", "~")    -- Unescape tildes
 	str = string.gsub(str, "\\r", "\r")   -- Unescape carriage returns
 	str = string.gsub(str, "\\n", "\n")   -- Unescape newlines
 	str = string.gsub(str, "\\\\", "\\")  -- Unescape backslashes last
@@ -559,19 +559,19 @@ function BlackList:EncodeBlacklist()
 	for i = 1, table.getn(list) do
 		local player = list[i]
 		if player and player["name"] then
-			-- Format: name¦reason¦added¦level¦class¦race¦expiry
+			-- Format: name~reason~added~level~class~race~expiry
 			local expiryStr = ""
 			if player["expiry"] and player["expiry"] ~= "" then
 				expiryStr = tostring(player["expiry"])
 			end
 			
 			-- Escape special characters in text fields
-			local entry = EscapeForExport(player["name"]) .. "¦" ..
-			              EscapeForExport(player["reason"] or "") .. "¦" ..
-			              (player["added"] or 0) .. "¦" ..
-			              EscapeForExport(player["level"] or "") .. "¦" ..
-			              EscapeForExport(player["class"] or "") .. "¦" ..
-			              EscapeForExport(player["race"] or "") .. "¦" ..
+			local entry = EscapeForExport(player["name"]) .. "~" ..
+			              EscapeForExport(player["reason"] or "") .. "~" ..
+			              (player["added"] or 0) .. "~" ..
+			              EscapeForExport(player["level"] or "") .. "~" ..
+			              EscapeForExport(player["class"] or "") .. "~" ..
+			              EscapeForExport(player["race"] or "") .. "~" ..
 			              expiryStr
 			table.insert(encoded, entry)
 		end
@@ -606,16 +606,16 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 		DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Found " .. table.getn(lines) .. " lines", 1, 1, 0)
 	end
 	
-	-- Parse each line (broken bar-delimited format with escaping)
+	-- Parse each line (tilde-delimited format with escaping)
 	for _, line in ipairs(lines) do
-		-- Split by broken bar manually to ensure exactly 7 parts
+		-- Split by tilde manually to ensure exactly 7 parts
 		local parts = {}
 		local current = ""
 		local len = string.len(line)
 		
 		for i = 1, len do
 			local char = string.sub(line, i, i)
-			if char == "¦" then
+			if char == "~" then
 				table.insert(parts, current)
 				current = ""
 			else
