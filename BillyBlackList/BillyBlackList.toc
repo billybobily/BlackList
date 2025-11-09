@@ -1,6 +1,6 @@
 ## Interface: 11200
 ## Title: Billy's BlackList
-## Version: 1.2.1
+## Version: 1.2.2
 ## Author: BillyBobily
 ## eMail: ma.an.tr@gmail.com
 ## Notes: Keeps a list of players you don't want to play with (black listed)

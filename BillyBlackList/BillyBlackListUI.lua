@@ -1138,27 +1138,35 @@ function BlackList:ShowStandaloneDetails()
 	if levelText then
 		if player["level"] == "" and player["class"] == "" and player["race"] == "" then
 			-- No info at all
-			levelText:SetText("No information available")
-		elseif player["level"] == "" and player["class"] == "" then
 			levelText:SetText("Unknown Level, Class")
-		elseif player["level"] == "" then
-			levelText:SetText("Unknown Level " .. player["class"])
-		elseif player["class"] == "" then
-			levelText:SetText("Level " .. player["level"] .. " Unknown Class")
 		else
-			levelText:SetText("Level " .. player["level"] .. " " .. player["class"])
+			-- Build the text with all available info on one line
+			local parts = {}
+			
+			if player["level"] ~= "" then
+				table.insert(parts, "Level " .. player["level"])
+			else
+				table.insert(parts, "Unknown Level")
+			end
+			
+			if player["class"] ~= "" then
+				table.insert(parts, player["class"])
+			else
+				table.insert(parts, "Unknown Class")
+			end
+			
+			if player["race"] ~= "" then
+				table.insert(parts, player["race"])
+			end
+			
+			levelText:SetText(table.concat(parts, " "))
 		end
 	end
 	
 	local raceText = getglobal("BlackListStandaloneDetails_Race")
 	if raceText then
-		if player["level"] == "" and player["class"] == "" and player["race"] == "" then
-			-- Hide race line if no info at all
-			raceText:SetText("")
-		else
-			local race = player["race"] ~= "" and player["race"] or "Unknown Race"
-			raceText:SetText(race)
-		end
+		-- Hide the race line since we're showing it on the level line
+		raceText:SetText("")
 	end
 	
 	local dateText = getglobal("BlackListStandaloneDetails_Date")
