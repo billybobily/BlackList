@@ -731,6 +731,9 @@ function BlackList:UpdateStandaloneListRow(playerIndex)
 					-- Add reason in brackets if it exists
 					if player["reason"] and player["reason"] ~= "" then
 						local reason = player["reason"]
+						-- Replace newlines with spaces for display
+						reason = string.gsub(reason, "\n", " ")
+						reason = string.gsub(reason, "\r", " ")
 						-- Truncate reason if too long (max 30 characters)
 						if string.len(reason) > 30 then
 							reason = string.sub(reason, 1, 27) .. "..."
@@ -802,6 +805,9 @@ function BlackList:UpdateStandaloneUI()
 				-- Add reason in brackets if it exists
 				if player["reason"] and player["reason"] ~= "" then
 					local reason = player["reason"]
+					-- Replace newlines with spaces for display
+					reason = string.gsub(reason, "\n", " ")
+					reason = string.gsub(reason, "\r", " ")
 					-- Truncate reason if too long (max 30 characters)
 					if string.len(reason) > 30 then
 						reason = string.sub(reason, 1, 27) .. "..."
