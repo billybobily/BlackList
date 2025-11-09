@@ -588,6 +588,10 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 		return 0
 	end
 	
+	-- Trim leading/trailing whitespace but preserve internal newlines
+	importString = string.gsub(importString, "^%s+", "")
+	importString = string.gsub(importString, "%s+$", "")
+	
 	local imported = {}
 	
 	-- Split by newlines to get individual entries
@@ -596,6 +600,10 @@ function BlackList:DecodeAndImportBlacklist(importString, overwrite)
 		if line ~= "" then
 			table.insert(lines, line)
 		end
+	end
+	
+	if BlackList:GetOption("debugMode", false) then
+		DEFAULT_CHAT_FRAME:AddMessage("BlackList: [IMPORT DEBUG] Found " .. table.getn(lines) .. " lines", 1, 1, 0)
 	end
 	
 	-- Parse each line (broken bar-delimited format with escaping)
